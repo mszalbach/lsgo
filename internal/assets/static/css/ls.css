@@ -1,0 +1,15 @@
+td a {
+    color: #005fcc;
+    text-decoration: underline;
+    text-decoration-thickness: 0.1em;
+    text-underline-offset: 0.15em;
+}
+
+td a:hover {
+    color: #003e8a;
+}
+
+td a:focus-visible {
+    outline: 3px solid #005fcc;
+    outline-offset: 3px;
+}

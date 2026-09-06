@@ -1,0 +1,29 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!.gitkeep
+
+!*.md
+TODO.md
+
+!LICENSE
+
+!*.go
+!go.mod
+!go.sum
+
+!*.yaml
+!*.json
+!*.tmpl
+!*.css
+!*.svg
+
+!mise.toml
+
+!Makefile
+
+# ...even if they are in subdirectories
+!*/
+
