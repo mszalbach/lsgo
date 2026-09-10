@@ -10,14 +10,23 @@ import (
 
 func Router() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", http.NotFound)
-	mux.HandleFunc("GET /files/{file...}", http.HandlerFunc(serveLs))
+	mux.HandleFunc("GET /", rootHandler)
+	mux.HandleFunc("GET /files/{file...}", lsHandler)
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
+	mux.HandleFunc("GET /favicon.ico", faviconHandler)
 
 	return mux
 }
 
-func serveLs(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/files", http.StatusMovedPermanently)
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFileFS(w, r, assets.Static, "static/icons/folder-eye.svg")
+}
+
+func lsHandler(w http.ResponseWriter, r *http.Request) {
 	upath := "./" + r.PathValue("file")
 
 	root, err := NewRootFS("./logs")
