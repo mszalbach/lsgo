@@ -64,21 +64,21 @@ func (f *File) Children() ([]File, error) {
 		return nil, fmt.Errorf("could not read the directory %s: %w", f.RelPath, err)
 	}
 
-	children := make([]File, len(dirEntries))
-	for i, entry := range dirEntries {
+	var children []File
+	for _, entry := range dirEntries {
 		info, err := entry.Info()
 		if err != nil {
 			continue
 		}
 
-		children[i] = File{
+		children = append(children, File{
 			root:    f.root,
 			RelPath: path.Join(f.RelPath, entry.Name()),
 			Name:    entry.Name(),
 			IsDir:   entry.IsDir(),
 			Size:    info.Size(),
 			ModTime: info.ModTime(),
-		}
+		})
 	}
 
 	return children, nil
