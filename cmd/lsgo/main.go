@@ -29,11 +29,12 @@ func main() {
 		slog.Error("Could not open root folder", slog.String("folder", *folder), slog.Any("error", err))
 		os.Exit(1)
 	}
+	defer root.Close()
 
 	webServer, err := web.NewServer(root)
 	if err != nil {
 		slog.Error("Could not create handler for web server", slog.Any("error", err))
-		os.Exit(1)
+		panic(err)
 	}
 
 	server := http.Server{

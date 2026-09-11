@@ -105,3 +105,12 @@ func (r *Root) File(name string) (*File, error) {
 		RelPath: name,
 	}, nil
 }
+
+// Close closes the Root
+func (r *Root) Close() error {
+	err := r.root.Close()
+	if err != nil {
+		return fmt.Errorf("could not close root: %w", err)
+	}
+	return nil
+}
