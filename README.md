@@ -23,11 +23,11 @@ You can open a GitHub issue.
   * sort by name, size, or date
 * [ ] Packaging
   * Docker container
-* [ ] download folder as zip
 * [ ] prevent overly large files from being rendered
 * [ ] Signed Docker image and SBOM attestations
-* [ ] OIDC login
 * [ ] Web security improvements
+* [ ] download folder/files as zip
+* [ ] OIDC login
 * [ ] dark mode support
 
 ## Contributing
