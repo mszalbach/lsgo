@@ -18,9 +18,7 @@ You can open a GitHub issue.
 ## Roadmap
 
 * [ ] UI
-  * human-readable sizes
   * sort by name, size, or date
-  * dark mode support
 * [ ] Packaging
   * Docker container
 * [ ] download folder as zip
@@ -28,6 +26,7 @@ You can open a GitHub issue.
 * [ ] Signed Docker image and SBOM attestations
 * [ ] OIDC login
 * [ ] Web security improvements
+* [ ] dark mode support
 
 ## Contributing
 

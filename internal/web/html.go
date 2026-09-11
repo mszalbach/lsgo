@@ -13,8 +13,12 @@ type htmlRenderer struct {
 	template *template.Template
 }
 
+var funcs = template.FuncMap{
+	"bytes": humanReadableBytes,
+}
+
 func newHTMLRenderer() (*htmlRenderer, error) {
-	sharedTemplates, err := template.New("").ParseFS(assets.Templates, "**/*.tmpl")
+	sharedTemplates, err := template.New("").Funcs(funcs).ParseFS(assets.Templates, "**/*.tmpl")
 	if err != nil {
 		return nil, fmt.Errorf("could not parse embedded templates: %w", err)
 	}
@@ -40,4 +44,25 @@ func (h *htmlRenderer) render(w http.ResponseWriter, status int, data any, templ
 	}
 
 	return nil
+}
+
+var sizesSI = []string{"B", "kB", "MB", "GB", "TB", "PB", "EB"}
+
+const baseSI int64 = 1000
+
+func humanReadableBytes(size int64) string {
+	if size < 0 {
+		return "0 B"
+	}
+
+	unitsLimit := len(sizesSI) - 1
+	i := 0
+
+	// Keep dividing until size is under 1024 or we hit the maximum unit (EB)
+	for size >= baseSI && i < unitsLimit {
+		size /= baseSI
+		i++
+	}
+
+	return fmt.Sprintf("%d %s", size, sizesSI[i])
 }
