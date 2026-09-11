@@ -105,8 +105,9 @@ func Test_file_can_be_opened_as_os_file_to_use_it_with_other_go_functions(t *tes
 	osFile, err := file.AsOsFile()
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		err := osFile.Close()
-		t.Errorf("failed to clean up resource: %v", err)
+		if err := osFile.Close(); err != nil {
+			t.Errorf("failed to clean up resource: %v", err)
+		}
 	})
 
 	// Then
