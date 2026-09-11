@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/mszalbach/lsgo/internal/explorer"
 	"github.com/mszalbach/lsgo/internal/web"
 )
 
@@ -21,6 +22,14 @@ func main() {
 	addr := flag.String("addr", "localhost:8080", "Address to listen on. Default only listens on localhost.")
 	folder := flag.String("folder", "./public", "Folder to serve.")
 	flag.Parse()
+
+	root, err := explorer.NewRoot(*folder)
+	if err != nil {
+		slog.Error("Could not open root folder", slog.String("folder", *folder), slog.Any("error", err))
+		os.Exit(1)
+	}
+
+	web := web.NewServer(root)
 
 	server := http.Server{
 		Addr:    *addr,

@@ -9,10 +9,20 @@ import (
 	"github.com/mszalbach/lsgo/internal/explorer"
 )
 
-func Router() http.Handler {
+type Server struct {
+	root explorer.Root
+}
+
+func NewServer(root explorer.Root) Server {
+	return Server{
+		root: root,
+	}
+}
+
+func (s Server) Router() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", rootHandler)
-	mux.HandleFunc("GET /files/{file...}", lsHandler)
+	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)
 
@@ -27,16 +37,10 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFileFS(w, r, assets.Static, "static/icons/folder-eye.svg")
 }
 
-func lsHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	upath := "./" + r.PathValue("file")
 
-	root, err := explorer.NewRoot("./logs")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	file, err := root.File(upath)
+	file, err := s.root.File(upath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			http.NotFound(w, r)

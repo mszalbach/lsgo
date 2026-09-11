@@ -10,13 +10,13 @@ type Root struct {
 	root *os.Root
 }
 
-func NewRoot(name string) (*Root, error) {
+func NewRoot(name string) (Root, error) {
 	root, err := os.OpenRoot(name)
 	if err != nil {
-		return nil, err
+		return Root{}, err
 	}
 
-	return &Root{
+	return Root{
 		root: root,
 	}, nil
 }
