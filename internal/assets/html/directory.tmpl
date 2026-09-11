@@ -23,12 +23,16 @@
         <tbody>
           {{range .Children}}
           <tr>
-            <td><a href="{{.RelPath}}"><img src="/static/icons/{{if .IsDir}}folder{{else}}article{{end}}.svg" alt="{{if .IsDir}}directory{{else}}file{{end}}"> {{.Name}}</a></td>
+            {{if .IsDir}}
+              <td><a href="{{.Name}}/"><img src="/static/icons/folder.svg" alt="directory">{{.Name}}</a></td>
+            {{else}}
+              <td><a href="{{.Name}}"><img src="/static/icons/article.svg" alt="file">{{.Name}}</a></td>
+            {{end}}
             <td>{{.Size}} bytes</td>
             <td>{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
             <td>
               {{if not .IsDir}}
-              <a aria-label="Download {{.Name}}" href="{{.RelPath}}?download=1"><img src="/static/icons/download.svg" alt="download"></a>
+              <a aria-label="Download {{.Name}}" href="{{.Name}}?download=1"><img src="/static/icons/download.svg" alt="download"></a>
               {{end}}
             </td>
           </tr>

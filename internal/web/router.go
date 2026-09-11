@@ -5,6 +5,8 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/mszalbach/lsgo/internal/assets"
 	"github.com/mszalbach/lsgo/internal/explorer"
@@ -50,6 +52,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	upath := "./" + r.PathValue("file")
+	upath = filepath.Clean(upath)
 
 	file, err := s.root.File(upath)
 	if err != nil {
@@ -62,6 +65,17 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
+		// folder should end with a trailing slash to simplify links and work behind a proxy
+		if !strings.HasSuffix(r.URL.Path, "/") {
+			target := r.URL.Path + "/"
+			if r.URL.RawQuery != "" {
+				target += "?" + r.URL.RawQuery
+			}
+			//nolint:gosec // Seems to be safe against "Open redirect" but needs more testing
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+			return
+		}
+
 		s.serveDirectory(w, file)
 		return
 	}
