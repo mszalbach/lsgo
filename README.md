@@ -40,6 +40,18 @@ You need Go 1.27 installed.
 For development, check the [Makefile](./Makefile) for instructions on running the formatter, linter, and tests.
 The linter requires `golangci-lint`.
 
+You can start the server via normal go command:
+
+```bash
+go run ./...
+```
+
+or you can use [air](https://github.com/air-verse/air) to automatically reload on changes:
+
+```bash
+air
+```
+
 TL;DR
 
 ```bash

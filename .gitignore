@@ -16,9 +16,11 @@ TODO.md
 
 !*.yaml
 !*.json
+!*.toml
 !*.tmpl
 !*.css
 !*.svg
+
 
 !mise.toml
 
