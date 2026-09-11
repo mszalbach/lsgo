@@ -2,7 +2,7 @@
 
 ## Description
 
-LSGo lets you access files through your web browser. Like the Linux `ls` command, it is designed only to list files, with the additional ability to preview and download them.
+LSGo lets you access files through a web browser. Like the Linux `ls` command, it is designed only to list files, with the added ability to preview and download them.
 It is not intended for editing or creating files.
 
 ## Installation
@@ -22,16 +22,16 @@ You can open a GitHub issue.
   * sort by name, size, or date
   * dark mode support
 * [ ] Packaging
-  * docker container
+  * Docker container
 * [ ] download folder as zip
 * [ ] prevent overly large files from being rendered
-* [ ] signed Docker + SBOM attestations
+* [ ] Signed Docker image and SBOM attestations
 * [ ] OIDC login
-* [ ] Web security stuff
+* [ ] Web security improvements
 
 ## Contributing
 
-This is a test project and contributions are not currently planned. However, contributions are not forbidden — feel free to open an issue to discuss your ideas.
+This is a test project, and contributions are not currently planned. However, they are not prohibited—feel free to open an issue to discuss your ideas.
 
 ## Development
 
