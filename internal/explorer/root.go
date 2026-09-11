@@ -2,6 +2,7 @@
 package explorer
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"time"
@@ -16,7 +17,7 @@ type Root struct {
 func NewRoot(name string) (Root, error) {
 	root, err := os.OpenRoot(name)
 	if err != nil {
-		return Root{}, err
+		return Root{}, fmt.Errorf("could not create Root %s: %w", name, err)
 	}
 
 	return Root{
@@ -38,7 +39,12 @@ type File struct {
 // AsOsFile is used when the underlying os.File is needed.
 // Ensure to close it after usage.
 func (f *File) AsOsFile() (*os.File, error) {
-	return f.root.Open(f.relPath)
+	file, err := f.root.Open(f.relPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not open file %s: %w", f.relPath, err)
+	}
+
+	return file, nil
 }
 
 // Children return the children of the current File. Will return nil if the file is not a directory.
@@ -49,13 +55,13 @@ func (f *File) Children() ([]File, error) {
 
 	dir, err := f.root.Open(f.relPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not open %s to get children: %w", f.relPath, err)
 	}
 	defer dir.Close()
 
 	dirEntries, err := dir.ReadDir(-1)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not read the directory %s: %w", f.relPath, err)
 	}
 
 	children := make([]File, len(dirEntries))
@@ -82,12 +88,12 @@ func (f *File) Children() ([]File, error) {
 func (r *Root) File(name string) (*File, error) {
 	rootFile, err := r.root.Open(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not open file %s: %w", name, err)
 	}
 	defer rootFile.Close()
 	stat, err := rootFile.Stat()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get stats for %s: %w", name, err)
 	}
 
 	return &File{
