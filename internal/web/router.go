@@ -88,6 +88,16 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
+type directoryData struct {
+	Breadcrumb []breadcrumb
+	Directory  *explorer.File
+}
+
+type breadcrumb struct {
+	Name    string
+	RelPath string
+}
+
 func (s Server) serveDirectory(w http.ResponseWriter, r *http.Request, dir *explorer.File) {
 	// folder should end with a trailing slash to simplify links and work behind a proxy
 	if !strings.HasSuffix(r.URL.Path, "/") {
@@ -100,9 +110,36 @@ func (s Server) serveDirectory(w http.ResponseWriter, r *http.Request, dir *expl
 		return
 	}
 
-	err := s.htmlRenderer.render(w, http.StatusOK, dir, "directory.tmpl")
+	data := directoryData{
+		Directory:  dir,
+		Breadcrumb: createBreadcrumb(dir.RelPath),
+	}
+
+	err := s.htmlRenderer.render(w, http.StatusOK, data, "directory.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func createBreadcrumb(path string) []breadcrumb {
+	parts := strings.Split(path, "/")
+
+	breadcrumbs := make([]breadcrumb, 0, len(parts))
+	totalParts := len(parts)
+
+	for i, part := range parts {
+		// Calculate how many directories up we need to jump from current location
+		stepsUp := (totalParts - 1) - i
+
+		var relPath string
+		if stepsUp == 0 {
+			relPath = "."
+		} else {
+			relPath = strings.Repeat("../", stepsUp)
+		}
+
+		breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: relPath})
+	}
+	return breadcrumbs
 }

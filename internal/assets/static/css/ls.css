@@ -1,15 +1,20 @@
-td a {
-    color: #005fcc;
-    text-decoration: underline;
-    text-decoration-thickness: 0.1em;
-    text-underline-offset: 0.15em;
+.breadcrumb {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 50px 0px;
 }
 
-td a:hover {
-    color: #003e8a;
+.breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: end;
 }
 
-td a:focus-visible {
-    outline: 3px solid #005fcc;
-    outline-offset: 3px;
+.breadcrumb li:not(:last-child)::after {
+    display: inline-block;
+    content: "/";
 }

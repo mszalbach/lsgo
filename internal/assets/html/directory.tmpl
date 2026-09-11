@@ -5,11 +5,20 @@
     <title>LSGo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="/static/css/ls.css">
     <link rel="stylesheet" href="https://unpkg.com/bamboo.css/dist/light.min.css">
+    <link rel="stylesheet" href="/static/css/ls.css">
   </head>
   <body>
-    <h1>Directory listing for {{.RelPath}}</h1>
+
+    <nav aria-label="Breadcrumb" class="breadcrumb">
+      <ol>
+        <span>Directory listing for &nbsp;</span>
+        {{range .Breadcrumb}}
+          <li><a href="{{.RelPath}}">{{.Name}}</a></li>
+        {{end}}
+      </ol>
+    </nav>
+
     <main>
       <table>
         <thead>
@@ -21,7 +30,7 @@
           </tr>
         </thead>
         <tbody>
-          {{range .Children}}
+          {{range .Directory.Children}}
           <tr>
             {{if .IsDir}}
               <td><a href="{{.Name}}/"><img src="/static/icons/folder.svg" alt="directory">{{.Name}}</a></td>
