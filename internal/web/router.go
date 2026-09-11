@@ -65,18 +65,7 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
-		// folder should end with a trailing slash to simplify links and work behind a proxy
-		if !strings.HasSuffix(r.URL.Path, "/") {
-			target := r.URL.Path + "/"
-			if r.URL.RawQuery != "" {
-				target += "?" + r.URL.RawQuery
-			}
-			//nolint:gosec // Seems to be safe against "Open redirect" but needs more testing
-			http.Redirect(w, r, target, http.StatusMovedPermanently)
-			return
-		}
-
-		s.serveDirectory(w, file)
+		s.serveDirectory(w, r, file)
 		return
 	}
 
@@ -99,7 +88,18 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Server) serveDirectory(w http.ResponseWriter, dir *explorer.File) {
+func (s Server) serveDirectory(w http.ResponseWriter, r *http.Request, dir *explorer.File) {
+	// folder should end with a trailing slash to simplify links and work behind a proxy
+	if !strings.HasSuffix(r.URL.Path, "/") {
+		target := r.URL.Path + "/"
+		if r.URL.RawQuery != "" {
+			target += "?" + r.URL.RawQuery
+		}
+		//nolint:gosec // Seems to be safe against "Open redirect" but needs more testing
+		http.Redirect(w, r, target, http.StatusMovedPermanently)
+		return
+	}
+
 	err := s.htmlRenderer.render(w, http.StatusOK, dir, "directory.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -56,7 +56,7 @@ TL;DR
 
 ```bash
 make check # fmt, lint, test
-go run ./...
+air
 ```
 
 ## License
