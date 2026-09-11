@@ -49,7 +49,8 @@ func main() {
 
 	go func() {
 		slog.Info("Serving folder", "address", *addr, "folder", *folder)
-		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		err := server.ListenAndServe()
+		if !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Failed to start server", "error", err)
 			panic(err)
 		}
@@ -60,7 +61,8 @@ func main() {
 	timeoutCtx, timeoutFunc := context.WithTimeout(context.Background(), 10*time.Second)
 	defer timeoutFunc()
 
-	if stopErr := server.Shutdown(timeoutCtx); stopErr != nil {
+	stopErr := server.Shutdown(timeoutCtx)
+	if stopErr != nil {
 		slog.Warn("server stop failed", slog.Any("error", stopErr))
 	}
 }

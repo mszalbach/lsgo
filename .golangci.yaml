@@ -22,6 +22,7 @@ linters:
     - forbidigo
     - nolintlint
     - wrapcheck
+    - noinlineerr
   exclusions:
     presets:
       - std-error-handling
