@@ -29,7 +29,7 @@ func NewRoot(name string) (Root, error) {
 // This simplifies the handling with files because the important information are provided in one struct, instead of os.File.
 type File struct {
 	root    *os.Root
-	relPath string
+	RelPath string
 	Name    string
 	IsDir   bool
 	Size    int64
@@ -39,9 +39,9 @@ type File struct {
 // AsOsFile is used when the underlying os.File is needed.
 // Ensure to close it after usage.
 func (f *File) AsOsFile() (*os.File, error) {
-	file, err := f.root.Open(f.relPath)
+	file, err := f.root.Open(f.RelPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open file %s: %w", f.relPath, err)
+		return nil, fmt.Errorf("could not open file %s: %w", f.RelPath, err)
 	}
 
 	return file, nil
@@ -53,15 +53,15 @@ func (f *File) Children() ([]File, error) {
 		return nil, nil
 	}
 
-	dir, err := f.root.Open(f.relPath)
+	dir, err := f.root.Open(f.RelPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open %s to get children: %w", f.relPath, err)
+		return nil, fmt.Errorf("could not open %s to get children: %w", f.RelPath, err)
 	}
 	defer dir.Close()
 
 	dirEntries, err := dir.ReadDir(-1)
 	if err != nil {
-		return nil, fmt.Errorf("could not read the directory %s: %w", f.relPath, err)
+		return nil, fmt.Errorf("could not read the directory %s: %w", f.RelPath, err)
 	}
 
 	children := make([]File, len(dirEntries))
@@ -73,7 +73,7 @@ func (f *File) Children() ([]File, error) {
 
 		children[i] = File{
 			root:    f.root,
-			relPath: path.Join(f.relPath, entry.Name()),
+			RelPath: path.Join(f.RelPath, entry.Name()),
 			Name:    entry.Name(),
 			IsDir:   entry.IsDir(),
 			Size:    info.Size(),
@@ -102,6 +102,6 @@ func (r *Root) File(name string) (*File, error) {
 		Size:    stat.Size(),
 		ModTime: stat.ModTime(),
 		root:    r.root,
-		relPath: name,
+		RelPath: name,
 	}, nil
 }

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/bamboo.css/dist/light.min.css">
   </head>
   <body>
-    <h1>Directory listing for {{.Name}}</h1>
+    <h1>Directory listing for {{.RelPath}}</h1>
     <main>
       <table>
         <thead>
@@ -23,12 +23,12 @@
         <tbody>
           {{range .Children}}
           <tr>
-            <td><a href="{{$.Name}}/{{.Name}}"><img src="/static/icons/{{if .IsDir}}folder{{else}}article{{end}}.svg" alt="{{if .IsDir}}directory{{else}}file{{end}}"> {{.Name}}</a></td>
+            <td><a href="{{.RelPath}}"><img src="/static/icons/{{if .IsDir}}folder{{else}}article{{end}}.svg" alt="{{if .IsDir}}directory{{else}}file{{end}}"> {{.Name}}</a></td>
             <td>{{.Size}} bytes</td>
             <td>{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
             <td>
               {{if not .IsDir}}
-              <a aria-label="Download {{.Name}}" href="{{$.Name}}/{{.Name}}?download=1"><img src="/static/icons/download.svg" alt="download"></a>
+              <a aria-label="Download {{.Name}}" href="{{.RelPath}}?download=1"><img src="/static/icons/download.svg" alt="download"></a>
               {{end}}
             </td>
           </tr>
