@@ -14,7 +14,7 @@ test: ## Run the tests.
 
 .PHONY: lint
 lint: ## Run the linter.
-	@golangci-lint run
+	@golangci-lint run --fix
 
 .PHONY: fmt
 fmt: ## Format the code.
