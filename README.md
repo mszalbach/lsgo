@@ -1,5 +1,7 @@
 # LSGo
 
+[![build](https://github.com/mszalbach/lsgo/actions/workflows/ci.yaml/badge.svg)](https://github.com/mszalbach/lsgo/actions/workflows/ci.yaml)
+
 ## Description
 
 LSGo lets you access files through a web browser. Like the Linux `ls` command, it is designed only to list files, with the added ability to preview and download them.
