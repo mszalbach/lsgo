@@ -1,4 +1,4 @@
-package backend
+package ui
 
 import (
 	"bytes"

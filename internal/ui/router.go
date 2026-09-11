@@ -1,4 +1,4 @@
-package backend
+package ui
 
 import (
 	"mime"
@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/mszalbach/lsgo/internal/assets"
+	"github.com/mszalbach/lsgo/internal/explorer"
 )
 
 func Router() http.Handler {
@@ -29,7 +30,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 func lsHandler(w http.ResponseWriter, r *http.Request) {
 	upath := "./" + r.PathValue("file")
 
-	root, err := NewRootFS("./logs")
+	root, err := explorer.NewRoot("./logs")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,7 +55,7 @@ func lsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file file) {
+func serveFile(w http.ResponseWriter, r *http.Request, file explorer.File) {
 	osFile, err := file.AsOsFile()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -70,7 +71,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file file) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func serveDirectory(w http.ResponseWriter, dir file) {
+func serveDirectory(w http.ResponseWriter, dir explorer.File) {
 
 	htmlRenderer, err := newHTMLRenderer()
 	if err != nil {

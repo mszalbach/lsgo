@@ -27,7 +27,7 @@ C4Container
         
         Container(uiPkg, "internal/ui", "Go + HTML", "Provides a web interface for browsing folders and viewing files")
         Container(assetsPkg, "internal/assets", "Directory", "HTML Templates, CSS, JavaScript, etc.")
-        Container(filePkg, "internal/file", "Go", "Provides functionality for listing and working with folder structures")
+        Container(explorerPkg, "internal/explorer", "Go", "Provides functionality for listing and working with folder structures")
         Component(empty,"helper because Mermaid does not have real styling yet")  
         Container(cmdClient, "cmd/lsgo", "Go", "Main entry point that initializes and coordinates the system")
     }
@@ -35,9 +35,9 @@ C4Container
     Rel(user, uiPkg, "Browses folders and views or downloads files")
     Rel(user, assetsPkg, "Load UI assets")
 
-    Rel(filePkg, folder, "Reads folders and files")
+    Rel(explorerPkg, folder, "Reads folders and files")
 
-    Rel(cmdClient, filePkg, "Create")
+    Rel(cmdClient, explorerPkg, "Create")
     Rel(cmdClient, uiPkg, "Serves via an HTTP server")
     Rel(cmdClient, assetsPkg, "Serves via an HTTP server")
 
