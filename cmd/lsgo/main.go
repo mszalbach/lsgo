@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mszalbach/lsgo/internal/ui"
+	"github.com/mszalbach/lsgo/internal/web"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    *addr,
-		Handler: ui.Router(),
+		Handler: web.Router(),
 	}
 
 	stopContext, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
