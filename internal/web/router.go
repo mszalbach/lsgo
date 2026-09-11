@@ -12,14 +12,21 @@ import (
 
 // Server provides everything needed to serve the LSGo webpage
 type Server struct {
-	root explorer.Root
+	root         explorer.Root
+	htmlRenderer *htmlRenderer
 }
 
 // NewServer creates a Server
-func NewServer(root explorer.Root) Server {
-	return Server{
-		root: root,
+func NewServer(root explorer.Root) (Server, error) {
+	renderer, err := newHTMLRenderer()
+	if err != nil {
+		return Server{}, err
 	}
+
+	return Server{
+		root:         root,
+		htmlRenderer: renderer,
+	}, nil
 }
 
 // Router constructs the handlers and bind them to the correct path to serve LSGo
@@ -55,7 +62,7 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
-		serveDirectory(w, file)
+		s.serveDirectory(w, file)
 		return
 	}
 
@@ -78,14 +85,8 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func serveDirectory(w http.ResponseWriter, dir *explorer.File) {
-	htmlRenderer, err := newHTMLRenderer()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = htmlRenderer.render(w, http.StatusOK, dir, "directory.tmpl")
+func (s Server) serveDirectory(w http.ResponseWriter, dir *explorer.File) {
+	err := s.htmlRenderer.render(w, http.StatusOK, dir, "directory.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

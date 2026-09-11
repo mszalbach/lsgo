@@ -30,7 +30,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	webServer := web.NewServer(root)
+	webServer, err := web.NewServer(root)
+	if err != nil {
+		slog.Error("Could not create handler for web server", slog.Any("error", err))
+		os.Exit(1)
+	}
 
 	server := http.Server{
 		Addr:              *addr,
