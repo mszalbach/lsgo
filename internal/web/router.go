@@ -1,3 +1,4 @@
+// Package web contains everyhting to render the web ui to list a directory folder
 package web
 
 import (
@@ -9,16 +10,19 @@ import (
 	"github.com/mszalbach/lsgo/internal/explorer"
 )
 
+// Server provides everything needed to serve the LSGo webpage
 type Server struct {
 	root explorer.Root
 }
 
+// NewServer creates a Server
 func NewServer(root explorer.Root) Server {
 	return Server{
 		root: root,
 	}
 }
 
+// Router constructs the handlers and bind them to the correct path to serve LSGo
 func (s Server) Router() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", rootHandler)
@@ -56,10 +60,9 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serveFile(w, r, file)
-
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file explorer.File) {
+func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 	osFile, err := file.AsOsFile()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -75,8 +78,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file explorer.File) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func serveDirectory(w http.ResponseWriter, dir explorer.File) {
-
+func serveDirectory(w http.ResponseWriter, dir *explorer.File) {
 	htmlRenderer, err := newHTMLRenderer()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

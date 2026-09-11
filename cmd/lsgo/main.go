@@ -1,3 +1,4 @@
+// Package main coordinates the other packages and starts the webserver
 package main
 
 import (
@@ -29,11 +30,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	web := web.NewServer(root)
+	webServer := web.NewServer(root)
 
 	server := http.Server{
-		Addr:    *addr,
-		Handler: web.Router(),
+		Addr:              *addr,
+		Handler:           webServer.Router(),
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      5 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	stopContext, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)

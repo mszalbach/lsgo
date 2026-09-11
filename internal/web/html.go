@@ -13,7 +13,6 @@ type htmlRenderer struct {
 }
 
 func newHTMLRenderer() (*htmlRenderer, error) {
-
 	sharedTemplates, err := template.New("").ParseFS(assets.Templates, "**/*.tmpl")
 	if err != nil {
 		return nil, err
@@ -34,7 +33,10 @@ func (h *htmlRenderer) render(w http.ResponseWriter, status int, data any, templ
 	}
 
 	w.WriteHeader(status)
-	buf.WriteTo(w)
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

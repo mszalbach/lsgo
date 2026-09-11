@@ -1,3 +1,4 @@
+// Package explorer contains everything to work with a directory and it childs
 package explorer
 
 import (
@@ -6,10 +7,12 @@ import (
 	"time"
 )
 
+// Root represents a folder structure
 type Root struct {
 	root *os.Root
 }
 
+// NewRoot creates a Root to work with a folder structure
 func NewRoot(name string) (Root, error) {
 	root, err := os.OpenRoot(name)
 	if err != nil {
@@ -21,6 +24,8 @@ func NewRoot(name string) (Root, error) {
 	}, nil
 }
 
+// File represents a folder and file in the Root.
+// This simplifies the handling with files because the important information are provided in one struct, instead of os.File.
 type File struct {
 	root    *os.Root
 	relPath string
@@ -30,16 +35,14 @@ type File struct {
 	ModTime time.Time
 }
 
-func (f File) AsOsFile() (*os.File, error) {
+// AsOsFile is used when the underlying os.File is needed.
+// Ensure to close it after usage.
+func (f *File) AsOsFile() (*os.File, error) {
 	return f.root.Open(f.relPath)
 }
 
-func (f File) IsRoot() bool {
-	return f.Name == "."
-
-}
-
-func (f File) Children() ([]File, error) {
+// Children return the children of the current File. Will return nil if the file is not a directory.
+func (f *File) Children() ([]File, error) {
 	if !f.IsDir {
 		return nil, nil
 	}
@@ -51,7 +54,6 @@ func (f File) Children() ([]File, error) {
 	defer dir.Close()
 
 	dirEntries, err := dir.ReadDir(-1)
-
 	if err != nil {
 		return nil, err
 	}
@@ -76,25 +78,24 @@ func (f File) Children() ([]File, error) {
 	return children, nil
 }
 
-func (r *Root) File(name string) (File, error) {
+// File returns a File from the current Root.
+func (r *Root) File(name string) (*File, error) {
 	rootFile, err := r.root.Open(name)
 	if err != nil {
-		return File{}, err
+		return nil, err
 	}
 	defer rootFile.Close()
 	stat, err := rootFile.Stat()
 	if err != nil {
-		return File{}, err
+		return nil, err
 	}
 
-	file := File{
+	return &File{
 		Name:    stat.Name(),
 		IsDir:   stat.IsDir(),
 		Size:    stat.Size(),
 		ModTime: stat.ModTime(),
 		root:    r.root,
 		relPath: name,
-	}
-
-	return file, nil
+	}, nil
 }
