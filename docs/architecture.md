@@ -2,11 +2,11 @@
 
 ```mermaid
 C4Context
-    title System Context View LSGo 
+    title System Context View for LSGo
     Person(user, "User", "Uses a web browser to access files")
     System(lsgo, "LSGo", "A Go application that serves a folder as a web page")
     System_Ext(folder, "Folder", "A folder on the system where LSGo runs")
-    
+
     Rel(user, lsgo, "Uses")
     Rel(lsgo, folder, "Lists folders and files")
 
@@ -15,34 +15,36 @@ C4Context
 
 # Container
 
+The main package is allowed to access all other packages to create and initialize them.
+The Mermaid C4 diagrams lack styling, which can lead to readability problems when links are present.
+
 ```mermaid
 C4Container
-    title ContainerView LSGo 
-    
+    title Container View for LSGo
+
     Person(user, "User", "Uses a web browser to access files")
-    
-    System_Ext(folder, "Folder", "A folder on the system where LSGo runs")
-    
+
     Container_Boundary(lsgo, "LSGo") {
-        
-        Container(webPkg, "internal/web", "Go + HTML", "Provides a web interface for browsing folders and viewing files")
-        Container(assetsPkg, "internal/assets", "Directory", "HTML Templates, CSS, JavaScript, etc.")
-        Container(explorerPkg, "internal/explorer", "Go", "Provides functionality for listing and working with folder structures")
-        Component(empty,"helper because Mermaid does not have real styling yet")  
-        Container(cmdClient, "cmd/lsgo", "Go", "Main entry point that initializes and coordinates the system")
+
+        Container(webPkg, "web", "Go + HTML", "Provides a web interface for browsing folders and viewing files")
+        Container(assetsPkg, "assets", "Directory", "HTML templates, CSS, JavaScript, etc.")
+        Container(cmdClient, "main", "Go", "Main entry point that initializes and coordinates the system")
+        Container(explorerPkg, "explorer", "Go", "Provides functionality for listing and working with folder structures")
+
+        Container_Boundary(filesystem, "Filesystem") {
+            System_Ext(folder, "Folder", "A folder on the system where LSGo runs")
+        }
     }
 
     Rel(user, webPkg, "Browses folders and views or downloads files")
-    Rel(user, assetsPkg, "Load UI assets")
+    Rel(webPkg, assetsPkg, "Loads UI assets")
+    Rel(webPkg, explorerPkg, "Accesses the file system")
 
     Rel(explorerPkg, folder, "Reads folders and files")
 
-    Rel(cmdClient, explorerPkg, "Create")
-    Rel(cmdClient, webPkg, "Serves via an HTTP server")
-    Rel(cmdClient, assetsPkg, "Serves via an HTTP server")
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
-    UpdateElementStyle(empty, $fontColor="rgba(0,0,0,0)", $bgColor="rgba(0,0,0,0)", $borderColor="rgba(0,0,0,0)")
-    UpdateRelStyle(user, webPkg, $offsetY="40", $offsetX="-200")
-    UpdateRelStyle(user, assetsPkg, $offsetY="70", $offsetX="100")
+    UpdateRelStyle(user, webPkg, $offsetY="-40", $offsetX="0")
+    UpdateRelStyle(webPkg, assetsPkg, $offsetY="-20", $offsetX="-35")
+    UpdateRelStyle(explorerPkg, folder, $offsetY="-20", $offsetX="45")
 ```
