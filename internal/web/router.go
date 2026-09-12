@@ -4,6 +4,7 @@ package web
 import (
 	"mime"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -86,33 +87,24 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 		}))
 	}
 	// TODO this serves a lot of stuff even html with js code. Only serve them as plain txt?
+	// TODO do not serve files larger then x
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-type directoryData struct {
-	Breadcrumb []breadcrumb
-	Directory  *explorer.File
-}
-
-type breadcrumb struct {
-	Name    string
-	RelPath string
-}
-
 func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *explorer.File) {
-	data := directoryData{
-		Directory:  dir,
-		Breadcrumb: createBreadcrumb(dir.RelPath),
+	data, err := directoryDataFrom(dir)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	err := s.htmlRenderer.render(w, http.StatusOK, data, "directory.tmpl")
+	err = s.htmlRenderer.render(w, http.StatusOK, data, "directory.tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-// TODO hier muss der root mit . schon immer mit rein, sonst kann man nicht mehr auf dem Top Folder
 func createBreadcrumb(path string) []breadcrumb {
 	parts := strings.Split(path, "/")
 	var breadcrumbs []breadcrumb
@@ -120,7 +112,7 @@ func createBreadcrumb(path string) []breadcrumb {
 	for _, part := range parts {
 		if part != "" && part != "." {
 			current = current + part + "/"
-			breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: current})
+			breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: url.PathEscape(current)})
 		}
 	}
 	return breadcrumbs

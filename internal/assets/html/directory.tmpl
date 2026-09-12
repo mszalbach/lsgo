@@ -12,7 +12,7 @@
 
     <nav aria-label="Breadcrumb" class="breadcrumb">
       <ol>
-        <li><a href="files">Home</a></li>
+        <li><a href="/files">Home</a></li>
         {{range .Breadcrumb}}
           <li><a href="/files/{{.RelPath}}">{{.Name}}</a></li>
         {{end}}
@@ -30,7 +30,7 @@
           </tr>
         </thead>
         <tbody>
-          {{range .Directory.Children}}
+          {{range .Children}}
           <tr>
             {{if .IsDir}}
               <td><a href="/files/{{.RelPath}}"><img src="/static/icons/folder.svg" alt="directory">{{.Name}}</a></td>
