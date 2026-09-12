@@ -9,27 +9,24 @@ It is not intended for editing or creating files.
 
 ## Installation
 
-Currently no packaging, will be delivered later in the Roadmap.
-
+Packaging is not available yet; it will be added later in the roadmap.
 
 ## Usage
 
-:warning: LSGo makes your folder accesible via your Browser. Do not expose it directly to the internet.
+:warning: LSGo makes your folder accessible via your browser. Do not expose it directly to the internet.
 
-The default settings try to aim to be as secure as possible. 
-But keep in mind I am not perfect, I could produced bugs in the code or fail to document some special behaviour.
+The default settings try to be as secure as possible. However, keep in mind that I am not perfect; I may introduce bugs in the code or fail to document some edge cases.
 
-Run this unprivileged inside a container.
+Run this as an unprivileged user inside a container. If you want to expose it outside your PC, run it behind a proxy with at least TLS, preferably with authentication such as OIDC or mTLS.
 
-LSGo is configured via commandline flags. Run with `--help` to see the possible settings.
+LSGo is configured via command-line flags. Run with `--help` to see the available settings.
 
-The most important are:
+The most important ones are:
 
-
-| flag     | description                                                                     |
-| -------- | ------------------------------------------------------------------------------- |
-| --addr   | defines where the server will listen too. In Default only listens on localhost. |
-| --folder | denifes which folder is exposed via the web ui. Defaults to ./public            |
+| flag     | description                                                                      |
+| -------- | -------------------------------------------------------------------------------- |
+| --addr   | Defines where the server will listen. By default, it only listens on localhost.   |
+| --folder | Defines which folder is exposed via the web UI. Defaults to `./public`.          |
 
 
 ## Support
