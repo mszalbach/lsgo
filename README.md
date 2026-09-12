@@ -9,8 +9,27 @@ It is not intended for editing or creating files.
 
 ## Installation
 
+Currently no packaging, will be delivered later in the Roadmap.
+
 
 ## Usage
+
+:warning: LSGo makes your folder accesible via your Browser. Do not expose it directly to the internet.
+
+The default settings try to aim to be as secure as possible. 
+But keep in mind I am not perfect, I could produced bugs in the code or fail to document some special behaviour.
+
+Run this unprivileged inside a container.
+
+LSGo is configured via commandline flags. Run with `--help` to see the possible settings.
+
+The most important are:
+
+
+| flag     | description                                                                     |
+| -------- | ------------------------------------------------------------------------------- |
+| --addr   | defines where the server will listen too. In Default only listens on localhost. |
+| --folder | denifes which folder is exposed via the web ui. Defaults to ./public            |
 
 
 ## Support
@@ -19,13 +38,13 @@ You can open a GitHub issue.
 
 ## Roadmap
 
-* [ ] UI
-  * sort by name, size, or date
+* [ ] sort by name, size, or date
+* [ ] 404 handling
+* [ ] Web security improvements
+* [ ] prevent overly large files from being rendered
 * [ ] Packaging
   * Docker container
-* [ ] prevent overly large files from being rendered
 * [ ] Signed Docker image and SBOM attestations
-* [ ] Web security improvements
 * [ ] download folder/files as zip
 * [ ] OIDC login
 * [ ] dark mode support
