@@ -98,18 +98,7 @@ type breadcrumb struct {
 	RelPath string
 }
 
-func (s Server) serveDirectory(w http.ResponseWriter, r *http.Request, dir *explorer.File) {
-	// folder should end with a trailing slash to simplify links and work behind a proxy
-	if !strings.HasSuffix(r.URL.Path, "/") {
-		target := r.URL.Path + "/"
-		if r.URL.RawQuery != "" {
-			target += "?" + r.URL.RawQuery
-		}
-		//nolint:gosec // Seems to be safe against "Open redirect" but needs more testing
-		http.Redirect(w, r, target, http.StatusMovedPermanently)
-		return
-	}
-
+func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *explorer.File) {
 	data := directoryData{
 		Directory:  dir,
 		Breadcrumb: createBreadcrumb(dir.RelPath),
@@ -122,24 +111,19 @@ func (s Server) serveDirectory(w http.ResponseWriter, r *http.Request, dir *expl
 	}
 }
 
+// TODO hier muss der root mit . schon immer mit rein, sonst kann man nicht mehr auf dem Top Folder
 func createBreadcrumb(path string) []breadcrumb {
 	parts := strings.Split(path, "/")
 
-	breadcrumbs := make([]breadcrumb, 0, len(parts))
-	totalParts := len(parts)
+	breadcrumbs := make([]breadcrumb, 0, len(parts)+1)
+	breadcrumbs = append(breadcrumbs, breadcrumb{Name: "root", RelPath: ""})
+	current := ""
+	for _, part := range parts {
 
-	for i, part := range parts {
-		// Calculate how many directories up we need to jump from current location
-		stepsUp := (totalParts - 1) - i
-
-		var relPath string
-		if stepsUp == 0 {
-			relPath = "."
-		} else {
-			relPath = strings.Repeat("../", stepsUp)
+		if part != "" && part != "." {
+			current = current + part + "/"
+			breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: current})
 		}
-
-		breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: relPath})
 	}
 	return breadcrumbs
 }
