@@ -4,10 +4,8 @@ package web
 import (
 	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/mszalbach/lsgo/internal/assets"
 	"github.com/mszalbach/lsgo/internal/explorer"
@@ -103,17 +101,4 @@ func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *expl
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
-
-func createBreadcrumb(path string) []breadcrumb {
-	parts := strings.Split(path, "/")
-	var breadcrumbs []breadcrumb
-	current := ""
-	for _, part := range parts {
-		if part != "" && part != "." {
-			current = current + part + "/"
-			breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: url.PathEscape(current)})
-		}
-	}
-	return breadcrumbs
 }
