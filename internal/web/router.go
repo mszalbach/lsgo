@@ -85,6 +85,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 			"filename": file.Name,
 		}))
 	}
+	// TODO this serves a lot of stuff even html with js code. Only serve them as plain txt?
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
@@ -114,12 +115,9 @@ func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *expl
 // TODO hier muss der root mit . schon immer mit rein, sonst kann man nicht mehr auf dem Top Folder
 func createBreadcrumb(path string) []breadcrumb {
 	parts := strings.Split(path, "/")
-
-	breadcrumbs := make([]breadcrumb, 0, len(parts)+1)
-	breadcrumbs = append(breadcrumbs, breadcrumb{Name: "root", RelPath: ""})
+	var breadcrumbs []breadcrumb
 	current := ""
 	for _, part := range parts {
-
 		if part != "" && part != "." {
 			current = current + part + "/"
 			breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: current})
