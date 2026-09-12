@@ -54,17 +54,24 @@ func Test_root_returns_information_about_file(t *testing.T) {
 }
 
 func Test_file_returns_its_children(t *testing.T) {
+	type child struct {
+		name    string //nolint:unused // checked by the ElementsMatch assert
+		relPath string //nolint:unused // checked by the ElementsMatch assert
+	}
 	testCases := map[string]struct {
 		name             string
-		expectedChildren []string
+		expectedChildren []child
 	}{
 		"hello.md": {
 			name:             "hello.md",
-			expectedChildren: nil,
+			expectedChildren: []child{},
 		},
 		"folderInFolder": {
-			name:             "folder/folderInFolder",
-			expectedChildren: []string{"a.yaml", "b.yaml"},
+			name: "folder/folderInFolder",
+			expectedChildren: []child{
+				{name: "a.yaml", relPath: "folder/folderInFolder/a.yaml"},
+				{name: "b.yaml", relPath: "folder/folderInFolder/b.yaml"},
+			},
 		},
 	}
 
@@ -81,14 +88,14 @@ func Test_file_returns_its_children(t *testing.T) {
 			children, err := file.Children()
 			require.NoError(t, err)
 
-			var actualNames []string
+			var actualChildren []child
 
 			for _, file := range children {
-				actualNames = append(actualNames, file.Name)
+				actualChildren = append(actualChildren, child{name: file.Name, relPath: file.RelPath})
 			}
 
 			// Then
-			assert.ElementsMatch(t, actualNames, tc.expectedChildren)
+			assert.ElementsMatch(t, actualChildren, tc.expectedChildren)
 		})
 	}
 }
