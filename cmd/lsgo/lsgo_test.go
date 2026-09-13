@@ -54,10 +54,9 @@ func Test_should_serve_static_files(t *testing.T) {
 
 func Test_should_list_files_in_directory(t *testing.T) {
 	type child struct {
-		name string //nolint:unused // checked by the ElementsMatch assert
-		href string //nolint:unused // checked by the ElementsMatch assert
-		// TODO to check
-		// isDir bool   //nolint:unused // checked by the ElementsMatch assert
+		name  string //nolint:unused // checked by the ElementsMatch assert
+		href  string //nolint:unused // checked by the ElementsMatch assert
+		isDir bool   //nolint:unused // checked by the ElementsMatch assert
 	}
 	testCases := map[string]struct {
 		url              string
@@ -66,22 +65,22 @@ func Test_should_list_files_in_directory(t *testing.T) {
 		"root": {
 			url: "http://localhost/files",
 			expectedChildren: []child{
-				{name: "a.md", href: "/files/a.md"},
-				{name: "level1", href: "/files/level1"},
+				{name: "a.md", href: "/files/a.md", isDir: false},
+				{name: "level1", href: "/files/level1", isDir: true},
 			},
 		},
 		"trailing slash should behave like without trailing slash": {
 			url: "http://localhost/files/",
 			expectedChildren: []child{
-				{name: "a.md", href: "/files/a.md"},
-				{name: "level1", href: "/files/level1"},
+				{name: "a.md", href: "/files/a.md", isDir: false},
+				{name: "level1", href: "/files/level1", isDir: true},
 			},
 		},
 		"level2": {
 			url: "http://localhost/files/level1/level2",
 			expectedChildren: []child{
 				// TODO the / should not be escaped
-				{name: "emptyDir", href: "/files/level1%2Flevel2%2FemptyDir"},
+				{name: "emptyDir", href: "/files/level1%2Flevel2%2FemptyDir", isDir: true},
 			},
 		},
 		"empty directory": {
@@ -91,13 +90,13 @@ func Test_should_list_files_in_directory(t *testing.T) {
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles",
 			expectedChildren: []child{
-				{name: "folder?query=2", href: "/files/level1%2FspecialFiles%2Ffolder%3Fquery=2"},
-				{name: "folder#fragment", href: "/files/level1%2FspecialFiles%2Ffolder%23fragment"},
+				{name: "folder?query=2", href: "/files/level1%2FspecialFiles%2Ffolder%3Fquery=2", isDir: true},
+				{name: "folder#fragment", href: "/files/level1%2FspecialFiles%2Ffolder%23fragment", isDir: true},
 				{
 					name: "<a href=\"google.com\">Link file",
 					href: "/files/level1%2FspecialFiles%2F%3Ca%20href=%22google.com%22%3ELink%20file",
 				},
-				{name: "javascript.html", href: "/files/level1%2FspecialFiles%2Fjavascript.html"},
+				{name: "javascript.html", href: "/files/level1%2FspecialFiles%2Fjavascript.html", isDir: false},
 			},
 		},
 	}
@@ -119,9 +118,13 @@ func Test_should_list_files_in_directory(t *testing.T) {
 			doc.Find("td > a:not([href$='?download=1'])").Each(func(_ int, s *goquery.Selection) {
 				href, _ := s.Attr("href")
 				name := strings.TrimSpace(s.Text())
+				alt, _ := s.Find("img").Attr("alt")
+				isDir := alt == "directory"
+
 				actualChildren = append(actualChildren, child{
-					name: name,
-					href: href,
+					name:  name,
+					href:  href,
+					isDir: isDir,
 				})
 			})
 			assert.ElementsMatch(t, actualChildren, tc.expectedChildren)
