@@ -33,7 +33,7 @@ func NewServer(root explorer.Root) (Server, error) {
 // Router constructs the handlers and bind them to the correct path to serve LSGo
 func (s Server) Router() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /$", rootHandler)
+	mux.HandleFunc("GET /", rootHandler)
 	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)

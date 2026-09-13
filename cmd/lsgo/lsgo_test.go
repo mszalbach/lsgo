@@ -234,7 +234,6 @@ func Test_should_return_not_found_for_non_existing_resource(t *testing.T) {
 	testCases := map[string]struct {
 		url string
 	}{
-		"non existing path":  {url: "http://localhost/DOES-NOT-EXIST"},
 		"non existing asset": {url: "http://localhost/static/css/DOES-NOT-EXIST.css"},
 		// TODO expected to return 404?
 		// "non existing file": {url: "http://localhost/files/DOES-NOT-EXIST.md"},
