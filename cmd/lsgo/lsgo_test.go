@@ -18,6 +18,7 @@ import (
 func TestMain(m *testing.M) {
 	err := os.MkdirAll("testdata/level1/level2/emptyDir", 0o750)
 	if err != nil {
+		//nolint:forbidigo // in TestMain there is no default logger
 		fmt.Println("Could not create required empty folder")
 		os.Exit(1)
 	}
