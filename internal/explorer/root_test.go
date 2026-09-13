@@ -8,6 +8,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func createTestdataRoot(t *testing.T) explorer.Root {
+	t.Helper()
+	root, err := explorer.NewRoot("testdata")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		err := root.Close()
+		if err != nil {
+			t.Errorf("failed to clean up resource: %v", err)
+		}
+	})
+	return root
+}
+
 func Test_root_returns_information_about_file(t *testing.T) {
 	testCases := map[string]struct {
 		name            string
@@ -36,8 +49,7 @@ func Test_root_returns_information_about_file(t *testing.T) {
 	}
 
 	// Given
-	root, err := explorer.NewRoot("testdata")
-	require.NoError(t, err)
+	root := createTestdataRoot(t)
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
@@ -76,8 +88,7 @@ func Test_file_returns_its_children(t *testing.T) {
 	}
 
 	// Given
-	root, err := explorer.NewRoot("testdata")
-	require.NoError(t, err)
+	root := createTestdataRoot(t)
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
@@ -102,8 +113,7 @@ func Test_file_returns_its_children(t *testing.T) {
 
 func Test_file_can_be_opened_as_os_file_to_use_it_with_other_go_functions(t *testing.T) {
 	// Given
-	root, err := explorer.NewRoot("testdata")
-	require.NoError(t, err)
+	root := createTestdataRoot(t)
 
 	file, err := root.File("hello.md")
 	require.NoError(t, err)
@@ -163,8 +173,7 @@ func Test_root_can_not_access_files_out_of_his_directory_structure(t *testing.T)
 	}
 
 	// Given
-	root, err := explorer.NewRoot("testdata")
-	require.NoError(t, err)
+	root := createTestdataRoot(t)
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
