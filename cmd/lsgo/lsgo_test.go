@@ -131,8 +131,8 @@ func Test_should_list_files_in_directory(t *testing.T) {
 
 func Test_should_have_a_breadcrumb_navigation(t *testing.T) {
 	type breadcrumb struct {
-		name string
-		href string
+		name string //nolint:unused // checked by the ElementsMatch assert
+		href string //nolint:unused // checked by the ElementsMatch assert
 	}
 
 	// Given
