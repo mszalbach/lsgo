@@ -235,8 +235,7 @@ func Test_should_return_not_found_for_non_existing_resource(t *testing.T) {
 		url string
 	}{
 		"non existing asset": {url: "http://localhost/static/css/DOES-NOT-EXIST.css"},
-		// TODO expected to return 404?
-		// "non existing file": {url: "http://localhost/files/DOES-NOT-EXIST.md"},
+		"non existing file":  {url: "http://localhost/files/DOES-NOT-EXIST.md"},
 	}
 	// Given
 	server := createTestServer(t)

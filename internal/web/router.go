@@ -2,9 +2,10 @@
 package web
 
 import (
+	"errors"
+	"io/fs"
 	"mime"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	"github.com/mszalbach/lsgo/internal/assets"
@@ -55,7 +56,8 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := s.root.File(upath)
 	if err != nil {
-		if os.IsNotExist(err) {
+
+		if errors.Is(err, fs.ErrNotExist) {
 			http.NotFound(w, r)
 			return
 		}
