@@ -29,3 +29,6 @@ TODO.md
 # ...even if they are in subdirectories
 !*/
 
+# but allow files needed for tests
+!**/testdata/
+!**/testdata/**
