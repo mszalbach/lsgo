@@ -99,3 +99,27 @@ If files are too large, show a warning and offer a download link instead of tryi
 - Access is constrained to the configured root instead of the process working directory.
 - Files and folders with unusual names require careful URL and filesystem handling and may expose edge cases that need dedicated tests.
 - Special MIME type handling is required instead of using Go's default way of serving files.
+
+## 20260913-1 Focus on integration tests instead of unit tests
+
+accepted
+
+### Context
+
+The main behavior of LSGo is exposed through its HTTP interface. Users interact with routes, rendered HTML, links, headers, and file contents rather than with individual Go functions or types.
+
+Unit tests for those implementation details can make the architecture and names difficult to change.
+
+### Decision
+
+Prefer integration tests for user-visible behavior and use them as the default when testing. Tests should interact with the application through its HTTP routes and assert observable results such as status codes, response headers, file contents, and rendered HTML.
+
+Write unit tests only when an integration test would be disproportionately difficult or would obscure the behavior being checked. This includes focused edge cases and logic with many combinations where setting up files.
+
+### Consequences
+
+- Internal architecture, function names, and type names can change without requiring broad test changes when user-visible behavior is unchanged.
+- Integration tests provide confidence that the main components work together as users experience them.
+- Tests may be slower and require more setup than isolated unit tests.
+- Failures may be less localized, so test names and assertions should make the affected user-visible behavior clear.
+- Some edge cases and complex combinations are still covered with unit tests.
