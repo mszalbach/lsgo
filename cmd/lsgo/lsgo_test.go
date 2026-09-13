@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -12,6 +14,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(m *testing.M) {
+	err := os.MkdirAll("testdata/level1/level2/emptyDir", 0o750)
+	if err != nil {
+		fmt.Println("Could not create required empty folder")
+		os.Exit(1)
+	}
+	m.Run()
+}
 
 func createTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
