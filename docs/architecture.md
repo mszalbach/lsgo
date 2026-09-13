@@ -15,8 +15,8 @@ C4Context
 
 # Container
 
-The main package is allowed to access all other packages to create and initialize them.
-The Mermaid C4 diagrams lack styling, which can lead to readability problems when links are present.
+The main package is allowed to access the other packages so it can create and initialize them.
+The Mermaid C4 diagrams lack styling, which can make links harder to read.
 
 ```mermaid
 C4Container
@@ -59,7 +59,7 @@ filesystem access. `explorer` is created with `os.OpenRoot`, so lookups are
 relative to the configured folder and cannot escape that root. Only after the
 lookup succeeds does the web layer render a directory response.
 
-This should be a C4Dynamic diagram, but Mermaid support is not quite there yet.
+This should be a C4 Dynamic diagram, but Mermaid support is not quite there yet.
 
 The yellow blocks mark parts of the system where untrusted content may appear
 and must be handled carefully, such as URL encoding or correcting MIME types

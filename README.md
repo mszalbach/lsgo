@@ -4,7 +4,7 @@
 
 ## Description
 
-LSGo lets you access files through a web browser. Like the Linux `ls` command, it is designed only to list files, with the added ability to preview and download them.
+LSGo lets you browse files through a web browser. Like the Linux `ls` command, it is designed only to list files, with the added ability to preview and download them.
 It is not intended for editing or creating files.
 
 ## Installation
@@ -15,7 +15,7 @@ Packaging is not available yet; it will be added later in the roadmap.
 
 :warning: LSGo makes your folder accessible via your browser. Do not expose it directly to the internet.
 
-The default settings try to be as secure as possible. However, keep in mind that I am not perfect; I may introduce bugs in the code or fail to document some edge cases.
+The default settings aim to be as secure as possible. However, keep in mind that I am not perfect; I may introduce bugs into the code or fail to document some edge cases.
 
 Run this as an unprivileged user inside a container. If you want to expose it outside your PC, run it behind a proxy with at least TLS, preferably with authentication such as OIDC or mTLS.
 
@@ -48,7 +48,7 @@ You can open a GitHub issue.
 
 ## Contributing
 
-This is a test project, and contributions are not currently planned. However, they are not prohibited—feel free to open an issue to discuss your ideas.
+This is a small test project, and contributions are not currently planned. However, they are not prohibited—feel free to open an issue to discuss your ideas.
 
 ## Development
 
@@ -57,7 +57,7 @@ You need Go 1.27 installed.
 For development, check the [Makefile](./Makefile) for instructions on running the formatter, linter, and tests.
 The linter requires `golangci-lint`.
 
-You can start the server via normal go command:
+You can start the server via the normal Go command:
 
 ```bash
 go run ./...

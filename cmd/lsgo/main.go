@@ -1,4 +1,4 @@
-// Package main coordinates the other packages and starts the webserver
+// Package main coordinates the other packages and starts the web server.
 package main
 
 import (

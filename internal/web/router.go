@@ -1,4 +1,4 @@
-// Package web contains everyhting to render the web ui to list a directory folder
+// Package web contains everything needed to render the web UI for listing directories.
 package web
 
 import (
@@ -12,13 +12,13 @@ import (
 	"github.com/mszalbach/lsgo/internal/explorer"
 )
 
-// Server provides everything needed to serve the LSGo webpage
+// Server provides everything needed to serve the LSGo webpage.
 type Server struct {
 	root         explorer.Root
 	htmlRenderer *htmlRenderer
 }
 
-// NewServer creates a Server
+// NewServer creates a Server.
 func NewServer(root explorer.Root) (Server, error) {
 	renderer, err := newHTMLRenderer()
 	if err != nil {
@@ -31,7 +31,7 @@ func NewServer(root explorer.Root) (Server, error) {
 	}, nil
 }
 
-// Router constructs the handlers and bind them to the correct path to serve LSGo
+// Router constructs the handlers and binds them to the correct paths to serve LSGo.
 func (s Server) Router() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", rootHandler)
@@ -86,8 +86,8 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 			"filename": file.Name,
 		}))
 	}
-	// TODO this serves a lot of stuff even html with js code. Only serve them as plain txt?
-	// TODO do not serve files larger then x
+	// TODO: this serves a lot of content, including HTML with JavaScript. Only serve those as plain text?
+	// TODO: do not serve files larger than x.
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 

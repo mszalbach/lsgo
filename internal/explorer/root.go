@@ -1,4 +1,4 @@
-// Package explorer contains everything to work with a directory and it childs
+// Package explorer contains everything needed to work with a directory and its children.
 package explorer
 
 import (
@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-// Root represents a folder structure
+// Root represents a folder structure.
 type Root struct {
 	root *os.Root
 }
 
-// NewRoot creates a Root to work with a folder structure
+// NewRoot creates a Root to work with a folder structure.
 func NewRoot(name string) (Root, error) {
 	root, err := os.OpenRoot(name)
 	if err != nil {
@@ -25,8 +25,8 @@ func NewRoot(name string) (Root, error) {
 	}, nil
 }
 
-// File represents a folder and file in the Root.
-// This simplifies the handling with files because the important information are provided in one struct, instead of os.File.
+// File represents a folder or file in the Root.
+// This simplifies file handling because the important information is provided in one struct instead of an os.File.
 type File struct {
 	root    *os.Root
 	RelPath string
@@ -47,7 +47,7 @@ func (f *File) AsOsFile() (*os.File, error) {
 	return file, nil
 }
 
-// Children return the children of the current File. Will return nil if the file is not a directory.
+// Children returns the children of the current File. It returns nil if the file is not a directory.
 func (f *File) Children() ([]File, error) {
 	if !f.IsDir {
 		return nil, nil
@@ -106,7 +106,7 @@ func (r *Root) File(name string) (*File, error) {
 	}, nil
 }
 
-// Close closes the Root
+// Close closes the Root.
 func (r *Root) Close() error {
 	err := r.root.Close()
 	if err != nil {

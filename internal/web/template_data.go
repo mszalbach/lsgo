@@ -10,13 +10,13 @@ import (
 	"github.com/mszalbach/lsgo/internal/explorer"
 )
 
-// directoryData presentation of a directory for the web ui
+// directoryData represents the presentation data for a directory in the web UI.
 type directoryData struct {
 	Breadcrumb []breadcrumb
 	Children   []fileData
 }
 
-// fileData file information needed to render it as html
+// fileData contains the information needed to render a file in HTML.
 type fileData struct {
 	RelPath relPath
 	Name    string
@@ -25,18 +25,18 @@ type fileData struct {
 	ModTime time.Time
 }
 
-// breadcrumb navigation to have the names of all parent folders and there path to construct links
+// breadcrumb contains the parent folder names and paths used to construct links.
 type breadcrumb struct {
 	Name    string
 	RelPath relPath
 }
 
-// relPath helper to ensure paths are correctly path escaped in all template data
+// relPath ensures that paths are properly escaped while preserving path separators.
 type relPath struct {
 	path string
 }
 
-// String returns the string representation which ensures url special characters are encoded by still keeping the "/" segements
+// String returns the encoded path while preserving the "/" separators.
 func (p relPath) String() string {
 	parts := strings.Split(p.path, "/")
 	var escapedURL []string
