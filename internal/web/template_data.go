@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -35,8 +36,18 @@ type relPath struct {
 	path string
 }
 
+// String returns the string representation which ensures url special characters are encoded by still keeping the "/" segements
 func (p relPath) String() string {
-	return url.PathEscape(p.path)
+	parts := strings.Split(p.path, "/")
+	var escapedURL []string
+
+	for _, part := range parts {
+		if part != "" {
+			escapedURL = append(escapedURL, url.PathEscape(part))
+		}
+	}
+
+	return path.Join(escapedURL...)
 }
 
 func fileDataFrom(file *explorer.File) fileData {
@@ -66,13 +77,13 @@ func directoryDataFrom(dir *explorer.File) (directoryData, error) {
 	return data, nil
 }
 
-func createBreadcrumb(path string) []breadcrumb {
-	parts := strings.Split(path, "/")
+func createBreadcrumb(directoryRelPath string) []breadcrumb {
+	parts := strings.Split(directoryRelPath, "/")
 	var breadcrumbs []breadcrumb
 	current := ""
 	for _, part := range parts {
 		if part != "" && part != "." {
-			current = current + part + "/"
+			current = path.Join(current, part)
 			breadcrumbs = append(breadcrumbs, breadcrumb{Name: part, RelPath: relPath{path: current}})
 		}
 	}

@@ -79,8 +79,7 @@ func Test_should_list_files_in_directory(t *testing.T) {
 		"level2": {
 			url: "http://localhost/files/level1/level2",
 			expectedChildren: []child{
-				// TODO the / should not be escaped
-				{name: "emptyDir", href: "/files/level1%2Flevel2%2FemptyDir", isDir: true},
+				{name: "emptyDir", href: "/files/level1/level2/emptyDir", isDir: true},
 			},
 		},
 		"empty directory": {
@@ -90,13 +89,13 @@ func Test_should_list_files_in_directory(t *testing.T) {
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles",
 			expectedChildren: []child{
-				{name: "folder?query=2", href: "/files/level1%2FspecialFiles%2Ffolder%3Fquery=2", isDir: true},
-				{name: "folder#fragment", href: "/files/level1%2FspecialFiles%2Ffolder%23fragment", isDir: true},
+				{name: "folder?query=2", href: "/files/level1/specialFiles/folder%3Fquery=2", isDir: true},
+				{name: "folder#fragment", href: "/files/level1/specialFiles/folder%23fragment", isDir: true},
 				{
 					name: "<a href=\"google.com\">Link file",
-					href: "/files/level1%2FspecialFiles%2F%3Ca%20href=%22google.com%22%3ELink%20file",
+					href: "/files/level1/specialFiles/%3Ca%20href=%22google.com%22%3ELink%20file",
 				},
-				{name: "javascript.html", href: "/files/level1%2FspecialFiles%2Fjavascript.html", isDir: false},
+				{name: "javascript.html", href: "/files/level1/specialFiles/javascript.html", isDir: false},
 			},
 		},
 	}
@@ -150,16 +149,16 @@ func Test_should_have_a_breadcrumb_navigation(t *testing.T) {
 			url: "http://localhost/files/level1",
 			expectedBreadcrump: []breadcrumb{
 				{name: "Home", href: "/files"},
-				{name: "level1", href: "/files/level1%2F"},
+				{name: "level1", href: "/files/level1"},
 			},
 		},
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles/folder%3Fquery=2",
 			expectedBreadcrump: []breadcrumb{
 				{name: "Home", href: "/files"},
-				{name: "level1", href: "/files/level1%2F"},
-				{name: "specialFiles", href: "/files/level1%2FspecialFiles%2F"},
-				{name: "folder?query=2", href: "/files/level1%2FspecialFiles%2Ffolder%3Fquery=2%2F"},
+				{name: "level1", href: "/files/level1"},
+				{name: "specialFiles", href: "/files/level1/specialFiles"},
+				{name: "folder?query=2", href: "/files/level1/specialFiles/folder%3Fquery=2"},
 			},
 		},
 	}
