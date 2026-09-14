@@ -1,0 +1,34 @@
+{{define "page:title"}}
+  {{if .Breadcrumb}}{{(last .Breadcrumb).Name}}{{else}}Home{{end}} -
+{{end}}
+
+{{define "page:content"}}
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Size</th>
+      <th>Last Modified</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Content}}
+    <tr>
+      {{if .IsDir}}
+        <td><a href="/files/{{.RelPath}}"><img src="/static/icons/folder.svg" alt="directory">{{.Name}}</a></td>
+      {{else}}
+        <td><a href="/files/{{.RelPath}}"><img src="/static/icons/article.svg" alt="file">{{.Name}}</a></td>
+      {{end}}
+      <td>{{.Size | bytes}}</td>
+      <td>{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
+      <td>
+        {{if not .IsDir}}
+        <a aria-label="Download {{.Name}}" href="/files/{{.RelPath}}?download=1"><img src="/static/icons/download.svg" alt="download"></a>
+        {{end}}
+      </td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

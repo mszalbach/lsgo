@@ -20,7 +20,8 @@ type Server struct {
 
 // NewServer creates a Server.
 func NewServer(root explorer.Root) (Server, error) {
-	renderer, err := newHTMLRenderer()
+	// TODO renderer also injecting
+	renderer, err := newHTMLRenderer(assets.Templates, "html/base.tmpl")
 	if err != nil {
 		return Server{}, err
 	}
@@ -58,7 +59,11 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 
 		if errors.Is(err, fs.ErrNotExist) {
-			http.NotFound(w, r)
+			err = s.htmlRenderer.render(w, http.StatusNotFound, data{Content: upath}, "base", "html/pages/404.tmpl")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			return
 		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,13 +97,20 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 }
 
 func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *explorer.File) {
-	data, err := directoryDataFrom(dir)
+	breadcrumb := createBreadcrumb(dir.RelPath)
+	directoryData, err := directoryDataFrom(dir)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.htmlRenderer.render(w, http.StatusOK, data, "directory.tmpl")
+	err = s.htmlRenderer.render(
+		w,
+		http.StatusOK,
+		data{Breadcrumb: breadcrumb, Content: directoryData},
+		"base",
+		"html/pages/directory.tmpl",
+	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -1,0 +1,9 @@
+{{define "page:title"}}Not found -{{end}}
+
+{{define "page:content"}}
+<section aria-labelledby="not-found-title">
+    <h1 id="not-found-title">File not found</h1>
+    <p>The file or directory <code>{{.Content}}</code> does not exist.</p>
+    <p><a href="/files">Return to some where safe </a></p>
+</section>
+{{end}}

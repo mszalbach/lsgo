@@ -10,10 +10,10 @@ import (
 	"github.com/mszalbach/lsgo/internal/explorer"
 )
 
-// directoryData represents the presentation data for a directory in the web UI.
-type directoryData struct {
+// data the overal struct given to all templates.
+type data struct {
 	Breadcrumb []breadcrumb
-	Children   []fileData
+	Content    any
 }
 
 // fileData contains the information needed to render a file in HTML.
@@ -60,18 +60,15 @@ func fileDataFrom(file *explorer.File) fileData {
 	}
 }
 
-func directoryDataFrom(dir *explorer.File) (directoryData, error) {
+func directoryDataFrom(dir *explorer.File) ([]fileData, error) {
 	children, err := dir.Children()
 	if err != nil {
-		return directoryData{}, fmt.Errorf("could not convert %s to template data: %w", dir.RelPath, err)
+		return nil, fmt.Errorf("could not convert %s to template data: %w", dir.RelPath, err)
 	}
+	data := make([]fileData, 0, len(children))
 
-	data := directoryData{
-		Breadcrumb: createBreadcrumb(dir.RelPath),
-		Children:   make([]fileData, 0, len(children)),
-	}
 	for _, child := range children {
-		data.Children = append(data.Children, fileDataFrom(&child))
+		data = append(data, fileDataFrom(&child))
 	}
 
 	return data, nil

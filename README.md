@@ -36,7 +36,7 @@ You can open a GitHub issue.
 ## Roadmap
 
 * [ ] sort by name, size, or date
-* [ ] 404 handling
+* [x] 404 handling
 * [ ] Web security improvements
 * [ ] prevent overly large files from being rendered
 * [ ] Packaging
