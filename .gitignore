@@ -19,6 +19,7 @@ TODO.md
 !*.toml
 !*.tmpl
 !*.css
+!*.js
 !*.svg
 
 

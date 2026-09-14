@@ -18,3 +18,15 @@
     display: inline-block;
     content: "/";
 }
+
+th[data-sort-key] {
+    cursor: pointer;
+}
+
+th[data-sort-key][aria-sort="ascending"]::after {
+    content: " ^";
+}
+
+th[data-sort-key][aria-sort="descending"]::after {
+    content: " v";
+}
