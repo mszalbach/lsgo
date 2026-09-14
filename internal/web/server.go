@@ -40,7 +40,7 @@ func (s Server) Router() http.Handler {
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)
 
-	return mux
+	return owaspMiddleware(mux)
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
@@ -115,4 +115,18 @@ func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *expl
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+// owaspMiddleware sets the recommended header for security
+// see https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html
+func owaspMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
+		w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
+		w.Header().Set("Cross-Origin-Resource-Policy", "same-site")
+		w.Header().Set("Permissions-Policy", "geolocation=(), camera=(), microphone=()")
+		next.ServeHTTP(w, r)
+	})
 }
