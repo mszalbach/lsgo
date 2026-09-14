@@ -34,8 +34,8 @@ The most important ones are:
 You can open a GitHub issue.
 
 ## Roadmap
-
-* [ ] sort by name, size, or date
+* [x] listing directories and files over web
+* [x] sort by name, size, or date
 * [x] 404 handling
 * [ ] Web security improvements
 * [ ] prevent overly large files from being rendered
