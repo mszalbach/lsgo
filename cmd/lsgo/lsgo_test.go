@@ -265,3 +265,29 @@ func Test_should_return_not_found_for_non_existing_resource(t *testing.T) {
 		})
 	}
 }
+
+func Test_http_security_headers(t *testing.T) {
+	testCases := map[string]struct {
+		url string
+	}{
+		"directory": {url: "http://localhost/files"},
+		"file":      {url: "http://localhost/files/a.md"},
+		"asset":     {url: "http://localhost/static/css/ls.css"},
+	}
+	// Given
+	server := createTestServer(t)
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// When
+			res, err := server.Client().Get(tc.url)
+			require.NoError(t, err)
+
+			// Then
+			// testing only some headers to test middleware is correctly installed
+			assert.Equal(t, http.StatusOK, res.StatusCode)
+			assert.Equal(t, "DENY", res.Header.Get("X-Frame-Options"))
+			assert.Equal(t, "same-site", res.Header.Get("Cross-Origin-Resource-Policy"))
+		})
+	}
+}
