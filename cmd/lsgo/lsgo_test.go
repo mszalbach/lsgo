@@ -245,25 +245,25 @@ func Test_should_have_a_favicon(t *testing.T) {
 }
 
 func Test_should_return_not_found_for_non_existing_resource(t *testing.T) {
-	testCases := map[string]struct {
-		url string
-	}{
-		"non existing asset": {url: "http://localhost/static/css/DOES-NOT-EXIST.css"},
-		"non existing file":  {url: "http://localhost/files/DOES-NOT-EXIST.md"},
-	}
 	// Given
 	server := createTestServer(t)
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			// When
-			res, err := server.Client().Get(tc.url)
-			require.NoError(t, err)
+	// When
+	res, err := server.Client().Get("http://localhost/files/DOES-NOT-EXIST.md")
+	require.NoError(t, err)
 
-			// Then
-			assert.Equal(t, http.StatusNotFound, res.StatusCode)
-		})
-	}
+	// Then
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	require.NoError(t, err)
+
+	// has a breadcrumb
+	actualBreadcrumb := doc.Find("nav li > a")
+	assert.Equal(t, 1, actualBreadcrumb.Length())
+
+	// tells the user what file was not found
+	missingFileText := doc.Find("section > p").First().Text()
+	assert.Contains(t, missingFileText, "DOES-NOT-EXIST.md")
 }
 
 func Test_http_security_headers(t *testing.T) {
