@@ -127,6 +127,9 @@ func owaspMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
 		w.Header().Set("Cross-Origin-Resource-Policy", "same-site")
 		w.Header().Set("Permissions-Policy", "geolocation=(), camera=(), microphone=()")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		w.Header().
+			Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;")
 		next.ServeHTTP(w, r)
 	})
 }
