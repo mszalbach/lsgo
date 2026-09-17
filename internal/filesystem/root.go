@@ -1,5 +1,5 @@
-// Package explorer contains everything needed to work with a directory and its children.
-package explorer
+// Package filesystem contains everything needed to work with a directory and its children.
+package filesystem
 
 import (
 	"fmt"

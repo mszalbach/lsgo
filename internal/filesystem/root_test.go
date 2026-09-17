@@ -1,16 +1,16 @@
-package explorer_test
+package filesystem_test
 
 import (
 	"testing"
 
-	"github.com/mszalbach/lsgo/internal/explorer"
+	"github.com/mszalbach/lsgo/internal/filesystem"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestdataRoot(t *testing.T) explorer.Root {
+func createTestdataRoot(t *testing.T) filesystem.Root {
 	t.Helper()
-	root, err := explorer.NewRoot("testdata")
+	root, err := filesystem.NewRoot("testdata")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := root.Close()
@@ -148,7 +148,7 @@ func Test_root_can_not_be_created_for_non_existing_folder(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			// Given
 			// When
-			root, err := explorer.NewRoot(tc.path)
+			root, err := filesystem.NewRoot(tc.path)
 
 			// Then
 			assert.Empty(t, root)

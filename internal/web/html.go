@@ -22,7 +22,6 @@ func lastBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
 	return breadcrumbs[len(breadcrumbs)-1]
 }
 
-// "**/*.tmpl"
 // Copied from https://www.alexedwards.net/blog/how-i-use-htmx-with-go
 func newHTMLRenderer(templateFS fs.FS, sharedTemplateFiles ...string) (*htmlRenderer, error) {
 	sharedTemplates, err := template.New("").Funcs(funcs).ParseFS(templateFS, sharedTemplateFiles...)

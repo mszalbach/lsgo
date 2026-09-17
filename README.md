@@ -28,12 +28,12 @@ The most important ones are:
 | --addr   | Defines where the server will listen. By default, it only listens on localhost.   |
 | --folder | Defines which folder is exposed via the web UI. Defaults to `./public`.          |
 
-
 ## Support
 
 You can open a GitHub issue.
 
 ## Roadmap
+
 * [x] listing directories and files over web
 * [x] sort by name, size, or date
 * [x] 404 handling

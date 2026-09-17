@@ -9,31 +9,31 @@ import (
 	"path/filepath"
 
 	"github.com/mszalbach/lsgo/internal/assets"
-	"github.com/mszalbach/lsgo/internal/explorer"
+	"github.com/mszalbach/lsgo/internal/filesystem"
 )
 
-// Server provides everything needed to serve the LSGo webpage.
-type Server struct {
-	root         explorer.Root
+// Router provides everything needed to serve the LSGo webpage.
+type Router struct {
+	root         filesystem.Root
 	htmlRenderer *htmlRenderer
 }
 
-// NewServer creates a Server.
-func NewServer(root explorer.Root) (Server, error) {
+// NewRouter creates a Server.
+func NewRouter(root filesystem.Root) (Router, error) {
 	// TODO renderer also injecting
 	renderer, err := newHTMLRenderer(assets.Templates, "html/base.tmpl")
 	if err != nil {
-		return Server{}, err
+		return Router{}, err
 	}
 
-	return Server{
+	return Router{
 		root:         root,
 		htmlRenderer: renderer,
 	}, nil
 }
 
 // Router constructs the handlers and binds them to the correct paths to serve LSGo.
-func (s Server) Router() http.Handler {
+func (s Router) Router() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", rootHandler)
 	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
@@ -51,7 +51,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFileFS(w, r, assets.Static, "static/icons/folder-eye.svg")
 }
 
-func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
+func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	upath := "./" + r.PathValue("file")
 	upath = filepath.Clean(upath)
 
@@ -78,7 +78,7 @@ func (s Server) lsHandler(w http.ResponseWriter, r *http.Request) {
 	serveFile(w, r, file)
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
+func serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	osFile, err := file.AsOsFile()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -96,7 +96,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *explorer.File) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Server) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *explorer.File) {
+func (s Router) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
 	directoryData, err := directoryDataFrom(dir)
 	if err != nil {

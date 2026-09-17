@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mszalbach/lsgo/internal/explorer"
+	"github.com/mszalbach/lsgo/internal/filesystem"
 	"github.com/mszalbach/lsgo/internal/web"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 
 func createTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
-	root, err := explorer.NewRoot("testdata")
+	root, err := filesystem.NewRoot("testdata")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		err := root.Close()
@@ -35,7 +35,7 @@ func createTestServer(t *testing.T) *httptest.Server {
 			t.Errorf("failed to clean up resource: %v", err)
 		}
 	})
-	webServer, err := web.NewServer(root)
+	webServer, err := web.NewRouter(root)
 	require.NoError(t, err)
 
 	testServer := httptest.NewTestServer(t, webServer.Router())

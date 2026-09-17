@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mszalbach/lsgo/internal/explorer"
+	"github.com/mszalbach/lsgo/internal/filesystem"
 	"github.com/mszalbach/lsgo/internal/web"
 )
 
@@ -24,14 +24,14 @@ func main() {
 	folder := flag.String("folder", "./public", "Folder to serve.")
 	flag.Parse()
 
-	root, err := explorer.NewRoot(*folder)
+	root, err := filesystem.NewRoot(*folder)
 	if err != nil {
 		slog.Error("Could not open root folder", slog.String("folder", *folder), slog.Any("error", err))
 		os.Exit(1)
 	}
 	defer root.Close()
 
-	webServer, err := web.NewServer(root)
+	webServer, err := web.NewRouter(root)
 	if err != nil {
 		slog.Error("Could not create handler for web server", slog.Any("error", err))
 		panic(err)

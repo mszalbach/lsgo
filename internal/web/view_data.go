@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mszalbach/lsgo/internal/explorer"
+	"github.com/mszalbach/lsgo/internal/filesystem"
 )
 
 // data the overal struct given to all templates.
@@ -50,7 +50,7 @@ func (p relPath) String() string {
 	return path.Join(escapedURL...)
 }
 
-func fileDataFrom(file *explorer.File) fileData {
+func fileDataFrom(file *filesystem.File) fileData {
 	return fileData{
 		Name:    file.Name,
 		RelPath: relPath{path: file.RelPath},
@@ -60,7 +60,7 @@ func fileDataFrom(file *explorer.File) fileData {
 	}
 }
 
-func directoryDataFrom(dir *explorer.File) ([]fileData, error) {
+func directoryDataFrom(dir *filesystem.File) ([]fileData, error) {
 	children, err := dir.Children()
 	if err != nil {
 		return nil, fmt.Errorf("could not convert %s to template data: %w", dir.RelPath, err)
