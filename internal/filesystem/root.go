@@ -1,4 +1,4 @@
-// Package filesystem contains everything needed to work with a directory and its children.
+// Package filesystem contains everything needed to work with a folder and its children.
 package filesystem
 
 import (
@@ -47,7 +47,7 @@ func (f *File) AsOsFile() (*os.File, error) {
 	return file, nil
 }
 
-// Children returns the children of the current File. It returns nil if the file is not a directory.
+// Children returns the children of the current File. It returns nil if the file is not a folder.
 func (f *File) Children() ([]File, error) {
 	if !f.IsDir {
 		return nil, nil
@@ -61,7 +61,7 @@ func (f *File) Children() ([]File, error) {
 
 	dirEntries, err := dir.ReadDir(-1)
 	if err != nil {
-		return nil, fmt.Errorf("could not read the directory %s: %w", f.RelPath, err)
+		return nil, fmt.Errorf("could not read the folder %s: %w", f.RelPath, err)
 	}
 
 	var children []File

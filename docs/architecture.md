@@ -27,7 +27,7 @@ C4Container
     Container_Boundary(lsgo, "LSGo") {
 
         Container(webPkg, "web", "Go + HTML", "Provides a web interface for browsing folders and viewing files")
-        Container(assetsPkg, "assets", "Directory", "HTML templates, CSS, JavaScript, etc.")
+        Container(assetsPkg, "assets", "Folder", "HTML templates, CSS, JavaScript, etc.")
         Container(cmdClient, "main", "Go", "Main entry point that initializes and coordinates the system")
         Container(filesystemPkg, "filesystem", "Go", "Provides functionality for listing and working with folder structures")
 
@@ -57,7 +57,7 @@ The web layer receives an untrusted path value from the request. It normalizes
 that value and passes it to `filesystem`, which is the security boundary for
 filesystem access. `filesystem` is created with `os.OpenRoot`, so lookups are
 relative to the configured folder and cannot escape that root. Only after the
-lookup succeeds does the web layer render a directory response.
+lookup succeeds does the web layer render a folder response.
 
 This should be a C4 Dynamic diagram, but Mermaid support is not quite there yet.
 
@@ -73,7 +73,7 @@ flowchart LR
     normalize[web<br/>prefix ./ and filepath.Clean]
     api[explorer<br/>root-relative lookup]
     boundary{os.Root containment<br/>configured folder only}
-    directory[web<br/>serve directory]
+    folder[web<br/>serve folder]
     response[HTTP response]
     filesystem[(Configured folder)]
 
@@ -81,14 +81,14 @@ flowchart LR
     request --> normalize
     normalize --> api
     api --> boundary
-    boundary -->|lookup succeeds| directory
+    boundary -->|lookup succeeds| folder
     boundary -->|missing or invalid path| response
     boundary -.-> filesystem
-    directory --> response
+    folder --> response
     response --> browser
 
     classDef untrusted fill:#fff3cd,stroke:#b58105,color:#3d2f00
     classDef trusted fill:#d1e7dd,stroke:#28734f,color:#123d2a
-    class request,directory,filesystem,browser untrusted
+    class request,folder,filesystem,browser untrusted
     class normalize,api,response trusted
 ```

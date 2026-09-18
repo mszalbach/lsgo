@@ -63,15 +63,15 @@ accepted
 
 ### Context
 
-The web interface contains links to files, directories, breadcrumbs, and static assets. Relative links would depend on the current directory URL and could make navigation harder to reason about, especially when paths contain special characters.
+The web interface contains links to files, folders, breadcrumbs, and static assets. Relative links would depend on the current folder URL and could make navigation harder to reason about, especially when paths contain special characters.
 
 ### Decision
 
-Use absolute links for the web interface routes and static assets. File and directory links start at `/files`, while static assets start at `/static`.
+Use absolute links for the web interface routes and static assets. File and folder links start at `/files`, while static assets start at `/static`.
 
 ### Consequences
 
-- Links have a predictable target regardless of the current directory.
+- Links have a predictable target regardless of the current folder context.
 - Route construction is easier to understand and maintain.
 - The application cannot work unchanged behind a reverse proxy that mounts it below an extra path segment, such as `/lsgo`; this requires adding a configurable base path concept.
 
@@ -81,13 +81,13 @@ accepted
 
 ### Context
 
-LSGo exposes a user-selected folder through a web interface. File and directory names originate from the filesystem and may contain characters that have a meaning in URLs or HTML. File content could contain JavaScript, or a file could be too large to render.
+LSGo exposes a user-selected folder through a web interface. File and folder names originate from the filesystem and may contain characters that have a meaning in URLs or HTML. File content could contain JavaScript, or a file could be too large to render.
 
 The application must also avoid allowing paths to escape the selected root folder.
 
 ### Decision
 
-Treat file and directory names as untrusted input. Escape paths when creating URL values, use the standard HTML template escaping, and resolve filesystem access relative to an `os.Root` for the configured folder.
+Treat file and folder names as untrusted input. Escape paths when creating URL values, use the standard HTML template escaping, and resolve filesystem access relative to an `os.Root` for the configured folder.
 
 Treat file content as untrusted input. Only render files with safe MIME types or provide a download instead.
 
@@ -96,7 +96,7 @@ If files are too large, show a warning and offer a download link instead of tryi
 ### Consequences
 
 - File names are safely represented in generated links and HTML.
-- Access is constrained to the configured root instead of the process working directory.
+- Access is constrained to the configured root instead of the process working folder.
 - Files and folders with unusual names require careful URL and filesystem handling and may expose edge cases that need dedicated tests.
 - Special MIME type handling is required instead of using Go's default way of serving files.
 

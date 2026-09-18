@@ -64,7 +64,7 @@ func Test_should_serve_static_files(t *testing.T) {
 	}
 }
 
-func Test_should_list_files_in_directory(t *testing.T) {
+func Test_should_list_files_in_folder(t *testing.T) {
 	type child struct {
 		name  string //nolint:unused // checked by the ElementsMatch assert
 		href  string //nolint:unused // checked by the ElementsMatch assert
@@ -94,7 +94,7 @@ func Test_should_list_files_in_directory(t *testing.T) {
 				{name: "emptyDir", href: "/files/level1/level2/emptyDir", isDir: true},
 			},
 		},
-		"empty directory": {
+		"empty folder": {
 			url:              "http://localhost/files/level1/level2/emptyDir",
 			expectedChildren: []child{},
 		},
@@ -135,7 +135,7 @@ func Test_should_list_files_in_directory(t *testing.T) {
 				href, _ := s.Attr("href")
 				name := strings.TrimSpace(s.Text())
 				alt, _ := s.Find("img").Attr("alt")
-				isDir := alt == "directory"
+				isDir := alt == "folder"
 
 				actualChildren = append(actualChildren, child{
 					name:  name,
@@ -294,9 +294,9 @@ func Test_http_security_headers(t *testing.T) {
 	testCases := map[string]struct {
 		url string
 	}{
-		"directory": {url: "http://localhost/files"},
-		"file":      {url: "http://localhost/files/a.md"},
-		"asset":     {url: "http://localhost/static/css/ls.css"},
+		"folder": {url: "http://localhost/files"},
+		"file":   {url: "http://localhost/files/a.md"},
+		"asset":  {url: "http://localhost/static/css/ls.css"},
 	}
 	// Given
 	server := createTestServer(t)

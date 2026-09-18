@@ -157,7 +157,7 @@ func Test_root_cannot_be_created_for_a_nonexistent_folder(t *testing.T) {
 	}
 }
 
-func Test_root_cannot_access_files_outside_its_directory(t *testing.T) {
+func Test_root_cannot_access_files_outside_its_folder(t *testing.T) {
 	testCases := map[string]struct {
 		name string
 	}{

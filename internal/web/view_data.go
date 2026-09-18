@@ -60,7 +60,7 @@ func fileDataFrom(file *filesystem.File) fileData {
 	}
 }
 
-func directoryDataFrom(dir *filesystem.File) ([]fileData, error) {
+func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
 	children, err := dir.Children()
 	if err != nil {
 		return nil, fmt.Errorf("could not convert %s to template data: %w", dir.RelPath, err)
@@ -74,8 +74,8 @@ func directoryDataFrom(dir *filesystem.File) ([]fileData, error) {
 	return data, nil
 }
 
-func createBreadcrumb(directoryRelPath string) []breadcrumb {
-	parts := strings.Split(directoryRelPath, "/")
+func createBreadcrumb(folderRelPath string) []breadcrumb {
+	parts := strings.Split(folderRelPath, "/")
 	var breadcrumbs []breadcrumb
 	current := ""
 	for _, part := range parts {

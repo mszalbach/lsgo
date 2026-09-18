@@ -34,7 +34,7 @@ You can open a GitHub issue.
 
 ## Roadmap
 
-* [x] listing directories and files on the web
+* [x] listing folders and files on the web
 * [x] sort by name, size, or date
 * [x] 404 handling
 * [x] forcing insecure media types to always be downloaded

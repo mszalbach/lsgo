@@ -1,4 +1,4 @@
-// Package web contains everything needed to render the web UI for listing directories.
+// Package web contains everything needed to render the web UI for listing folders.
 package web
 
 import (
@@ -71,7 +71,7 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
-		s.serveDirectory(w, r, file)
+		s.serveFolder(w, r, file)
 		return
 	}
 
@@ -110,9 +110,9 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Router) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *filesystem.File) {
+func (s Router) serveFolder(w http.ResponseWriter, _ *http.Request, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
-	directoryData, err := directoryDataFrom(dir)
+	folderData, err := folderDataFrom(dir)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -121,9 +121,9 @@ func (s Router) serveDirectory(w http.ResponseWriter, _ *http.Request, dir *file
 	err = s.htmlRenderer.render(
 		w,
 		http.StatusOK,
-		data{Breadcrumb: breadcrumb, Content: directoryData},
+		data{Breadcrumb: breadcrumb, Content: folderData},
 		"base",
-		"html/pages/directory.tmpl",
+		"html/pages/folder.tmpl",
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
