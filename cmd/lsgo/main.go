@@ -12,6 +12,9 @@ import (
 	"syscall"
 	"time"
 
+	// needed for scratch images to have timezone information
+	_ "time/tzdata"
+
 	"github.com/mszalbach/lsgo/internal/filesystem"
 	"github.com/mszalbach/lsgo/internal/web"
 )

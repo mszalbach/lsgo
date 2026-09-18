@@ -9,24 +9,57 @@ It is not intended for editing or creating files.
 
 ## Installation
 
-Packaging is not available yet; it will be added later in the roadmap.
+The easiest way to run LSGo is with the provided Docker image. Replace `VERSION` with the release you want to use:
+
+```bash
+docker pull ghcr.io/mszalbach/lsgo:VERSION
+```
+
+You can also download a binary from the [GitHub Releases](https://github.com/mszalbach/lsgo/releases) page and run it directly on your machine.
+
+Before running LSGo, read the Usage section. Make sure the server is not reachable by untrusted users and that the folders you serve do not contain sensitive files.
 
 ## Usage
 
-:warning: LSGo makes your folder accessible via your browser. Do not expose it directly to the internet.
+> [!WARNING]
+> LSGo makes the selected folder available in your web browser. Do not expose it directly to the internet.
 
-The default settings aim to be as secure as possible. However, keep in mind that I am not perfect; I may introduce bugs into the code or fail to document some edge cases.
+The default settings listen on `localhost:8080`, so the server is only available from the local machine. If you need to make it available to other users, run it behind a reverse proxy with TLS and authentication, such as OIDC or mTLS.
 
-Run this as an unprivileged user inside a container. If you want to expose it outside your PC, run it behind a proxy with at least TLS, preferably with authentication such as OIDC or mTLS.
+Run LSGo as an unprivileged user, preferably inside a container. Only expose folders that are safe for the intended users to browse.
 
-LSGo is configured via command-line flags. Run with `--help` to see the available settings.
+LSGo is configured with command-line flags. Run `lsgo --help` to see all available options.
 
 The most important ones are:
 
-| flag     | description                                                                      |
-| -------- | -------------------------------------------------------------------------------- |
-| --addr   | Defines where the server will listen. By default, it only listens on localhost.   |
-| --folder | Defines which folder is exposed via the web UI. Defaults to `./public`.          |
+| Flag       | Description                                                     |
+| ---------- | --------------------------------------------------------------- |
+| `--addr`   | Address where the server listens. Defaults to `localhost:8080`. |
+| `--folder` | Folder exposed through the web UI. Defaults to `./public`.      |
+
+### Run with Docker
+
+The following command serves the host's `/tmp` directory at `http://localhost:8080`:
+
+```bash
+docker run --rm \
+  --publish 8080:8080 \
+  --volume /tmp:/app/public:ro \
+  ghcr.io/mszalbach/lsgo:VERSION \
+  --addr :8080
+```
+
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+### Run a downloaded binary
+
+To serve a local directory with a downloaded binary, run:
+
+```bash
+./lsgo --folder /path/to/folder
+```
+
+Then open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Support
 
