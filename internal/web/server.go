@@ -18,7 +18,7 @@ type Router struct {
 	htmlRenderer *htmlRenderer
 }
 
-// NewRouter creates a Server.
+// NewRouter creates a Router.
 func NewRouter(root filesystem.Root) (Router, error) {
 	// TODO renderer also injecting
 	renderer, err := newHTMLRenderer(assets.Templates, "html/base.tmpl")

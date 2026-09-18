@@ -26,25 +26,25 @@ func Test_root_returns_information_about_file(t *testing.T) {
 		name            string
 		isDir           bool
 		expectedName    string
-		expextedRelPath string
+		expectedRelPath string
 	}{
 		"./hello.md": {
 			name:            "hello.md",
 			isDir:           false,
 			expectedName:    "hello.md",
-			expextedRelPath: "hello.md",
+			expectedRelPath: "hello.md",
 		},
 		"./folder/folderInFolder": {
 			name:            "folder/folderInFolder",
 			isDir:           true,
 			expectedName:    "folderInFolder",
-			expextedRelPath: "folder/folderInFolder",
+			expectedRelPath: "folder/folderInFolder",
 		},
 		"./folder/folderInFolder/a.yaml": {
 			name:            "folder/folderInFolder/a.yaml",
 			isDir:           false,
 			expectedName:    "a.yaml",
-			expextedRelPath: "folder/folderInFolder/a.yaml",
+			expectedRelPath: "folder/folderInFolder/a.yaml",
 		},
 	}
 
@@ -60,7 +60,7 @@ func Test_root_returns_information_about_file(t *testing.T) {
 			// Then
 			assert.Equal(t, tc.isDir, file.IsDir)
 			assert.Equal(t, tc.expectedName, file.Name)
-			assert.Equal(t, tc.expextedRelPath, file.RelPath)
+			assert.Equal(t, tc.expectedRelPath, file.RelPath)
 		})
 	}
 }
@@ -111,7 +111,7 @@ func Test_file_returns_its_children(t *testing.T) {
 	}
 }
 
-func Test_file_can_be_opened_as_os_file_to_use_it_with_other_go_functions(t *testing.T) {
+func Test_file_can_be_opened_as_an_os_file(t *testing.T) {
 	// Given
 	root := createTestdataRoot(t)
 
@@ -132,11 +132,11 @@ func Test_file_can_be_opened_as_os_file_to_use_it_with_other_go_functions(t *tes
 	assert.Equal(t, "testdata/hello.md", osFile.Name())
 }
 
-func Test_root_can_not_be_created_for_non_existing_folder(t *testing.T) {
+func Test_root_cannot_be_created_for_a_nonexistent_folder(t *testing.T) {
 	testCases := map[string]struct {
 		path string
 	}{
-		"non existing folder": {
+		"nonexistent folder": {
 			path: "testdata/DOES_NOT_EXIST",
 		},
 		"file": {
@@ -157,7 +157,7 @@ func Test_root_can_not_be_created_for_non_existing_folder(t *testing.T) {
 	}
 }
 
-func Test_root_can_not_access_files_out_of_his_directory_structure(t *testing.T) {
+func Test_root_cannot_access_files_outside_its_directory(t *testing.T) {
 	testCases := map[string]struct {
 		name string
 	}{

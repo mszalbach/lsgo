@@ -148,7 +148,7 @@ func Test_should_list_files_in_directory(t *testing.T) {
 	}
 }
 
-func Test_should_have_a_breadcrumb_navigation(t *testing.T) {
+func Test_should_have_breadcrumb_navigation(t *testing.T) {
 	type breadcrumb struct {
 		name string //nolint:unused // checked by the ElementsMatch assert
 		href string //nolint:unused // checked by the ElementsMatch assert
@@ -159,19 +159,19 @@ func Test_should_have_a_breadcrumb_navigation(t *testing.T) {
 
 	testCases := map[string]struct {
 		url                string
-		expectedBreadcrump []breadcrumb
+		expectedBreadcrumb []breadcrumb
 	}{
-		"root": {url: "http://localhost/files", expectedBreadcrump: []breadcrumb{{name: "Home", href: "/files"}}},
+		"root": {url: "http://localhost/files", expectedBreadcrumb: []breadcrumb{{name: "Home", href: "/files"}}},
 		"level1": {
 			url: "http://localhost/files/level1",
-			expectedBreadcrump: []breadcrumb{
+			expectedBreadcrumb: []breadcrumb{
 				{name: "Home", href: "/files"},
 				{name: "level1", href: "/files/level1"},
 			},
 		},
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles/folder%3Fquery=2",
-			expectedBreadcrump: []breadcrumb{
+			expectedBreadcrumb: []breadcrumb{
 				{name: "Home", href: "/files"},
 				{name: "level1", href: "/files/level1"},
 				{name: "specialFiles", href: "/files/level1/specialFiles"},
@@ -191,17 +191,17 @@ func Test_should_have_a_breadcrumb_navigation(t *testing.T) {
 			doc, err := goquery.NewDocumentFromReader(res.Body)
 			require.NoError(t, err)
 
-			var actualBreadcrump []breadcrumb
+			var actualBreadcrumb []breadcrumb
 			doc.Find("nav li > a").Each(func(_ int, s *goquery.Selection) {
 				href, _ := s.Attr("href")
 				name := strings.TrimSpace(s.Text())
-				actualBreadcrump = append(actualBreadcrump, breadcrumb{
+				actualBreadcrumb = append(actualBreadcrumb, breadcrumb{
 					name: name,
 					href: href,
 				})
 			})
 
-			assert.ElementsMatch(t, actualBreadcrump, tc.expectedBreadcrump)
+			assert.ElementsMatch(t, actualBreadcrumb, tc.expectedBreadcrumb)
 		})
 	}
 }
@@ -248,7 +248,7 @@ func Test_should_serve_files(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, res.StatusCode)
 			assert.Equal(t, tc.expectedMediaType, res.Header.Get("Content-Type"))
-			// prevent the browser from doing MIME-type sniffing and just accept the type send
+			// Prevent the browser from doing MIME-type sniffing and accept only the type sent.
 			assert.Equal(t, "nosniff", res.Header.Get("X-Content-Type-Options"))
 			assert.Equal(t, tc.expectedDownloadOnly, actualDownloadOnly)
 		})
@@ -268,7 +268,7 @@ func Test_should_have_a_favicon(t *testing.T) {
 	assert.Equal(t, "image/svg+xml", res.Header.Get("Content-Type"))
 }
 
-func Test_should_return_not_found_for_non_existing_resource(t *testing.T) {
+func Test_should_return_not_found_for_nonexistent_resource(t *testing.T) {
 	// Given
 	server := createTestServer(t)
 
@@ -281,11 +281,11 @@ func Test_should_return_not_found_for_non_existing_resource(t *testing.T) {
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	require.NoError(t, err)
 
-	// has a breadcrumb
+	// Has a breadcrumb.
 	actualBreadcrumb := doc.Find("nav li > a")
 	assert.Equal(t, 1, actualBreadcrumb.Length())
 
-	// tells the user what file was not found
+	// Tells the user which file was not found.
 	missingFileText := doc.Find("section > p").First().Text()
 	assert.Contains(t, missingFileText, "DOES-NOT-EXIST.md")
 }
@@ -308,7 +308,7 @@ func Test_http_security_headers(t *testing.T) {
 			require.NoError(t, err)
 
 			// Then
-			// testing only some headers to test middleware is correctly installed
+			// Test selected headers to verify that the middleware is installed.
 			assert.Equal(t, http.StatusOK, res.StatusCode)
 			assert.Equal(t, "DENY", res.Header.Get("X-Frame-Options"))
 			assert.Equal(t, "same-site", res.Header.Get("Cross-Origin-Resource-Policy"))

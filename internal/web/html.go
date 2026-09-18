@@ -83,7 +83,7 @@ func humanReadableBytes(size int64) string {
 	unitsLimit := len(sizesSI) - 1
 	i := 0
 
-	// Keep dividing until size is under 1024 or we hit the maximum unit (EB)
+	// Keep dividing until size is under 1000 or we hit the maximum unit (EB)
 	for size >= baseSI && i < unitsLimit {
 		size /= baseSI
 		i++
