@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-var safeInlineMimeTypes = map[string]bool{
+var safeInlineMediaTypes = map[string]bool{
 	"text/plain":       true,
 	"text/x-log":       true,
 	"text/markdown":    true,
@@ -33,7 +33,7 @@ func isSafeInlineMediaType(rawMediaType string) (bool, error) {
 		return false, fmt.Errorf("could not parse media type %s %w", rawMediaType, err)
 	}
 
-	return safeInlineMimeTypes[rawMediaType], nil
+	return safeInlineMediaTypes[rawMediaType], nil
 }
 
 // detectMediaType finds out which mime type a file is.

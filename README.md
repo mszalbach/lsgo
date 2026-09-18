@@ -34,13 +34,14 @@ You can open a GitHub issue.
 
 ## Roadmap
 
-* [x] listing directories and files over web
+* [x] listing directories and files on the web
 * [x] sort by name, size, or date
 * [x] 404 handling
-* [ ] Web security improvements
+* [x] forcing insecure media types to always be downloaded
 * [ ] prevent overly large files from being rendered
 * [ ] Packaging
   * Docker container
+* [ ] configurable base path for proxy usage
 * [ ] Signed Docker image and SBOM attestations
 * [ ] download folder/files as zip
 * [ ] OIDC login
@@ -57,7 +58,7 @@ You need Go 1.27 installed.
 For development, check the [Makefile](./Makefile) for instructions on running the formatter, linter, and tests.
 The linter requires `golangci-lint`.
 
-You can start the server via the normal Go command:
+You can start the server using the standard Go command:
 
 ```bash
 go run ./...
@@ -69,7 +70,7 @@ or you can use [air](https://github.com/air-verse/air) to automatically reload o
 air
 ```
 
-TL;DR
+TL;DR:
 
 ```bash
 make check # fmt, lint, test
@@ -78,6 +79,6 @@ air
 
 ## License
 
-This project is licensed under Mozilla Public License 2.0.
+This project is licensed under the Mozilla Public License 2.0.
 
 See [LICENSE](./LICENSE).
