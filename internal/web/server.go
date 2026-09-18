@@ -21,7 +21,6 @@ type Router struct {
 
 // NewRouter creates a Router.
 func NewRouter(root filesystem.Root, maxInlineFileSize int64) (Router, error) {
-	// TODO renderer also injecting
 	renderer, err := newHTMLRenderer(assets.Templates, "html/base.tmpl")
 	if err != nil {
 		return Router{}, err
