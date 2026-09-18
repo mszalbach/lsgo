@@ -65,10 +65,9 @@ func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not convert %s to template data: %w", dir.RelPath, err)
 	}
-	data := make([]fileData, 0, len(children))
-
-	for _, child := range children {
-		data = append(data, fileDataFrom(&child))
+	data := make([]fileData, len(children))
+	for i, child := range children {
+		data[i] = fileDataFrom(&child)
 	}
 
 	return data, nil
