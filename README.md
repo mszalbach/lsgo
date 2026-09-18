@@ -39,7 +39,7 @@ You can open a GitHub issue.
 * [x] 404 handling
 * [x] forcing insecure media types to always be downloaded
 * [ ] prevent overly large files from being rendered
-* [ ] Packaging
+* [x] Packaging
   * Docker container
 * [ ] configurable base path for proxy usage
 * [ ] Signed Docker image and SBOM attestations
