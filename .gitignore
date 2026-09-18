@@ -1,35 +1,5 @@
-# Ignore everything
-*
-
-# But not these files...
-!.gitignore
-!.gitkeep
-
-!*.md
+/dist
+/bin
+# local test folder to serve files
+/public
 TODO.md
-
-!LICENSE
-
-!*.go
-!go.mod
-!go.sum
-
-!*.yaml
-!*.json
-!*.toml
-!*.tmpl
-!*.css
-!*.js
-!*.svg
-
-
-!mise.toml
-
-!Makefile
-
-# ...even if they are in subdirectories
-!*/
-
-# but allow files needed for tests
-!**/testdata/
-!**/testdata/**
