@@ -47,7 +47,7 @@ func main() {
 
 	server := http.Server{
 		Addr:              *addr,
-		Handler:           webServer.Router(),
+		Handler:           webServer.Routes(),
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      5 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,

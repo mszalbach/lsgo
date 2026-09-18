@@ -34,8 +34,8 @@ func NewRouter(root filesystem.Root, maxInlineFileSize int64) (Router, error) {
 	}, nil
 }
 
-// Router constructs the handlers and binds them to the correct paths to serve LSGo.
-func (s Router) Router() http.Handler {
+// Routes constructs the handlers and binds them to the correct paths to serve LSGo.
+func (s Router) Routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", rootHandler)
 	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
@@ -73,7 +73,7 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
-		s.serveFolder(w, r, file)
+		s.serveFolder(w, file)
 		return
 	}
 
@@ -114,7 +114,7 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Router) serveFolder(w http.ResponseWriter, _ *http.Request, dir *filesystem.File) {
+func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
 	folderData, err := folderDataFrom(dir)
 	if err != nil {

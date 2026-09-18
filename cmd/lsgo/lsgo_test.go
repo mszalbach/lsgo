@@ -38,7 +38,7 @@ func createTestServer(t *testing.T) *httptest.Server {
 	webServer, err := web.NewRouter(root, 5)
 	require.NoError(t, err)
 
-	testServer := httptest.NewTestServer(t, webServer.Router())
+	testServer := httptest.NewTestServer(t, webServer.Routes())
 	return testServer
 }
 
