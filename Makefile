@@ -6,7 +6,11 @@ help: ## Show this help.
 
 .PHONY: build
 build: ## Build the lsgo binary.
-	@go build -v -o bin/lsgo ./cmd/lsgo/...
+	@CGO_ENABLED=0 go build -v -o dist/lsgo ./cmd/lsgo/...
+
+.PHONY: docker
+docker: build # builds the dockercontainer
+	@docker build --build-arg TARGETPLATFORM=dist -t lsgo .
 
 .PHONY: test
 test: ## Run the tests.
