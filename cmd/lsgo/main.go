@@ -11,7 +11,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	// needed for scratch images to have timezone information
 	_ "time/tzdata"
 

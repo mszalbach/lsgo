@@ -12,9 +12,7 @@ linters:
     - gocritic
     - cyclop
     - revive
-    - ineffassign
     - nilnesserr
-    - unused
     - thelper
     - errorlint
     - usestdlibvars
@@ -40,6 +38,7 @@ formatters:
   enable:
     - gofumpt
     - golines
+    - gci
   settings:
     golines:
       max-len: 120
