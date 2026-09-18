@@ -86,12 +86,26 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	}
 	defer osFile.Close()
 
-	if r.URL.Query().Get("download") != "" {
+	mediaType, err := detectMediaType(osFile)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", mediaType)
+
+	isSafeMediaType, err := isSafeInlineMediaType(mediaType)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	downloadRequsted := r.URL.Query().Get("download") != ""
+
+	if downloadRequsted || !isSafeMediaType {
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
 			"filename": file.Name,
 		}))
 	}
-	// TODO: this serves a lot of content, including HTML with JavaScript. Only serve those as plain text?
+
 	// TODO: do not serve files larger than x.
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }

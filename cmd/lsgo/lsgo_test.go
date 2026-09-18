@@ -108,6 +108,11 @@ func Test_should_list_files_in_directory(t *testing.T) {
 					href: "/files/level1/specialFiles/%3Ca%20href=%22google.com%22%3ELink%20file",
 				},
 				{name: "javascript.html", href: "/files/level1/specialFiles/javascript.html", isDir: false},
+				{
+					name:  "html-without-extension",
+					href:  "/files/level1/specialFiles/html-without-extension",
+					isDir: false,
+				},
 			},
 		},
 	}
@@ -202,33 +207,52 @@ func Test_should_have_a_breadcrumb_navigation(t *testing.T) {
 }
 
 func Test_should_serve_files(t *testing.T) {
+	testCases := map[string]struct {
+		url                  string
+		expectedMediaType    string
+		expectedDownloadOnly bool
+	}{
+		"safe markdown": {
+			url:                  "http://localhost/files/a.md",
+			expectedMediaType:    "text/markdown; charset=utf-8",
+			expectedDownloadOnly: false,
+		},
+		"safe markdown with download requested": {
+			url:                  "http://localhost/files/a.md?download=1",
+			expectedMediaType:    "text/markdown; charset=utf-8",
+			expectedDownloadOnly: true,
+		},
+		"unsafe html": {
+			url:                  "http://localhost/files/level1/specialFiles/javascript.html",
+			expectedMediaType:    "text/html; charset=utf-8",
+			expectedDownloadOnly: true,
+		},
+		"unsafe html without extension": {
+			url:                  "http://localhost/files/level1/specialFiles/html-without-extension",
+			expectedMediaType:    "text/html; charset=utf-8",
+			expectedDownloadOnly: true,
+		},
+	}
+
 	// Given
 	server := createTestServer(t)
 
-	// When
-	res, err := server.Client().Get("http://localhost/files/a.md")
-	require.NoError(t, err)
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// When
+			res, err := server.Client().Get(tc.url)
+			require.NoError(t, err)
 
-	// Then
-	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.EqualValues(t, 5, res.ContentLength)
-	assert.Equal(t, "text/markdown; charset=utf-8", res.Header.Get("Content-Type"))
-	assert.Empty(t, res.Header.Get("Content-Disposition"))
-}
+			// Then
+			actualDownloadOnly := res.Header.Get("Content-Disposition") != ""
 
-func Test_should_provide_file_download(t *testing.T) {
-	// Given
-	server := createTestServer(t)
-
-	// When
-	res, err := server.Client().Get("http://localhost/files/a.md?download=1")
-	require.NoError(t, err)
-
-	// Then
-	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.EqualValues(t, 5, res.ContentLength)
-	assert.Equal(t, "text/markdown; charset=utf-8", res.Header.Get("Content-Type"))
-	assert.Equal(t, "attachment; filename=a.md", res.Header.Get("Content-Disposition"))
+			assert.Equal(t, http.StatusOK, res.StatusCode)
+			assert.Equal(t, tc.expectedMediaType, res.Header.Get("Content-Type"))
+			// prevent the browser from doing MIME-type sniffing and just accept the type send
+			assert.Equal(t, "nosniff", res.Header.Get("X-Content-Type-Options"))
+			assert.Equal(t, tc.expectedDownloadOnly, actualDownloadOnly)
+		})
+	}
 }
 
 func Test_should_have_a_favicon(t *testing.T) {
