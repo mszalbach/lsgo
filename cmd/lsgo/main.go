@@ -25,6 +25,11 @@ func main() {
 
 	addr := flag.String("addr", "localhost:8080", "Address to listen on. Default only listens on localhost.")
 	folder := flag.String("folder", "./public", "Folder to serve.")
+	maxInlineFileSize := flag.Int64(
+		"max-inline-file-size",
+		1_048_576,
+		"Maximum file size to display inline in bytes; larger files are download-only.",
+	)
 	flag.Parse()
 
 	root, err := filesystem.NewRoot(*folder)
@@ -34,7 +39,7 @@ func main() {
 	}
 	defer root.Close()
 
-	webServer, err := web.NewRouter(root)
+	webServer, err := web.NewRouter(root, *maxInlineFileSize)
 	if err != nil {
 		slog.Error("Could not create handler for web server", slog.Any("error", err))
 		panic(err)

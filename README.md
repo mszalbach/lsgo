@@ -32,10 +32,11 @@ LSGo is configured with command-line flags. Run `lsgo --help` to see all availab
 
 The most important ones are:
 
-| Flag       | Description                                                     |
-| ---------- | --------------------------------------------------------------- |
-| `--addr`   | Address where the server listens. Defaults to `localhost:8080`. |
-| `--folder` | Folder exposed through the web UI. Defaults to `./public`.      |
+| Flag                     | Description                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
+| `--addr`                 | Address where the server listens. Defaults to `localhost:8080`.                             |
+| `--folder`               | Folder exposed through the web UI. Defaults to `./public`.                                  |
+| `--max-inline-file-size` | Maximum file size to display inline in bytes. Larger files are available as downloads only. |
 
 ### Run with Docker
 
@@ -71,7 +72,7 @@ You can open a GitHub issue.
 * [x] sort by name, size, or date
 * [x] 404 handling
 * [x] forcing insecure media types to always be downloaded
-* [ ] prevent overly large files from being rendered
+* [x] prevent overly large files from being rendered
 * [x] Packaging
   * Docker container
 * [ ] configurable base path for proxy usage

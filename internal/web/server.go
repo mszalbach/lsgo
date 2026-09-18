@@ -14,12 +14,13 @@ import (
 
 // Router provides everything needed to serve the LSGo webpage.
 type Router struct {
-	root         filesystem.Root
-	htmlRenderer *htmlRenderer
+	root              filesystem.Root
+	htmlRenderer      *htmlRenderer
+	maxInlineFileSize int64
 }
 
 // NewRouter creates a Router.
-func NewRouter(root filesystem.Root) (Router, error) {
+func NewRouter(root filesystem.Root, maxInlineFileSize int64) (Router, error) {
 	// TODO renderer also injecting
 	renderer, err := newHTMLRenderer(assets.Templates, "html/base.tmpl")
 	if err != nil {
@@ -27,8 +28,9 @@ func NewRouter(root filesystem.Root) (Router, error) {
 	}
 
 	return Router{
-		root:         root,
-		htmlRenderer: renderer,
+		root:              root,
+		htmlRenderer:      renderer,
+		maxInlineFileSize: maxInlineFileSize,
 	}, nil
 }
 
@@ -75,10 +77,10 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveFile(w, r, file)
+	s.serveFile(w, r, file)
 }
 
-func serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
+func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	osFile, err := file.AsOsFile()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -98,15 +100,17 @@ func serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	downloadRequsted := r.URL.Query().Get("download") != ""
 
-	if downloadRequsted || !isSafeMediaType {
+	isDownload := r.URL.Query().Get("download") != ""
+	isFileTooLarge := file.Size > s.maxInlineFileSize
+	isUnsecureMediaType := !isSafeMediaType
+
+	if isDownload || isFileTooLarge || isUnsecureMediaType {
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
 			"filename": file.Name,
 		}))
 	}
 
-	// TODO: do not serve files larger than x.
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 

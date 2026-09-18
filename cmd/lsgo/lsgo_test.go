@@ -35,7 +35,7 @@ func createTestServer(t *testing.T) *httptest.Server {
 			t.Errorf("failed to clean up resource: %v", err)
 		}
 	})
-	webServer, err := web.NewRouter(root)
+	webServer, err := web.NewRouter(root, 5)
 	require.NoError(t, err)
 
 	testServer := httptest.NewTestServer(t, webServer.Router())
@@ -219,6 +219,11 @@ func Test_should_serve_files(t *testing.T) {
 		},
 		"safe markdown with download requested": {
 			url:                  "http://localhost/files/a.md?download=1",
+			expectedMediaType:    "text/markdown; charset=utf-8",
+			expectedDownloadOnly: true,
+		},
+		"large markdown": {
+			url:                  "http://localhost/files/level1/large-file.md",
 			expectedMediaType:    "text/markdown; charset=utf-8",
 			expectedDownloadOnly: true,
 		},
