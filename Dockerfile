@@ -1,0 +1,9 @@
+FROM scratch
+ARG TARGETPLATFORM
+
+WORKDIR app
+COPY $TARGETPLATFORM/lsgo /app/lsgo
+
+EXPOSE 8080
+ENTRYPOINT ["/app/lsgo"]
+CMD ["--help]
