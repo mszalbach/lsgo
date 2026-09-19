@@ -1,0 +1,9 @@
+{{define "page:title"}}Error -{{end}}
+
+{{define "page:content"}}
+<section aria-labelledby="error-title">
+    <h1 id="error-title">Something went wrong.</h1>
+    <p>{{.Content}}</p>
+    <p><a href="/files">Turn back.</a></p>
+</section>
+{{end}}

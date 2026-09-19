@@ -1,0 +1,9 @@
+{{define "page:title"}}Permission Denied -{{end}}
+
+{{define "page:content"}}
+<section aria-labelledby="permission-denied-title">
+    <h1 id="permission-denied-title">Permission denied</h1>
+    <p>You do not have permission to view the file or folder <code>{{.Content}}</code>.</p>
+    <p><a href="/files">Turn back.</a></p>
+</section>
+{{end}}

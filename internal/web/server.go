@@ -3,9 +3,11 @@ package web
 
 import (
 	"errors"
-	"io/fs"
+	"fmt"
+	"log/slog"
 	"mime"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/mszalbach/lsgo/internal/assets"
@@ -58,16 +60,7 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := s.root.File(upath)
 	if err != nil {
-
-		if errors.Is(err, fs.ErrNotExist) {
-			err = s.htmlRenderer.render(w, http.StatusNotFound, data{Content: upath}, "base", "html/pages/404.tmpl")
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			return
-		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.handleOpenFileError(w, upath, err)
 		return
 	}
 
@@ -79,24 +72,76 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	s.serveFile(w, r, file)
 }
 
+func (s Router) handleOpenFileError(w http.ResponseWriter, upath string, err error) {
+	var renderError error
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		renderError = s.htmlRenderer.render(
+			w,
+			http.StatusNotFound,
+			data{Content: upath},
+			"base",
+			"html/pages/notfound.tmpl",
+		)
+	case errors.Is(err, os.ErrPermission):
+		renderError = s.htmlRenderer.render(
+			w,
+			http.StatusForbidden,
+			data{Content: upath},
+			"base",
+			"html/pages/denied.tmpl",
+		)
+	default:
+		s.httpError(w, upath, err)
+		return
+	}
+
+	if renderError != nil {
+		slog.Error("Could not render error template", slog.String("file", upath), slog.Any("error", renderError))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
+	breadcrumb := createBreadcrumb(dir.RelPath)
+	folderData, err := folderDataFrom(dir)
+	if err != nil {
+		s.httpError(w, dir.RelPath, err)
+		return
+	}
+
+	err = s.htmlRenderer.render(
+		w,
+		http.StatusOK,
+		data{Breadcrumb: breadcrumb, Content: folderData},
+		"base",
+		"html/pages/folder.tmpl",
+	)
+	if err != nil {
+		s.httpError(w, dir.RelPath, err)
+		return
+	}
+}
+
 func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	osFile, err := file.AsOsFile()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.httpError(w, file.RelPath, err)
 		return
 	}
 	defer osFile.Close()
 
 	mediaType, err := detectMediaType(osFile)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.httpError(w, file.RelPath, err)
 		return
 	}
 	w.Header().Set("Content-Type", mediaType)
 
 	isSafeMediaType, err := isSafeInlineMediaType(mediaType)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.httpError(w, file.RelPath, err)
 		return
 	}
 
@@ -113,22 +158,18 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
-	breadcrumb := createBreadcrumb(dir.RelPath)
-	folderData, err := folderDataFrom(dir)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = s.htmlRenderer.render(
+func (s Router) httpError(w http.ResponseWriter, upath string, err error) {
+	renderError := s.htmlRenderer.render(
 		w,
-		http.StatusOK,
-		data{Breadcrumb: breadcrumb, Content: folderData},
+		http.StatusInternalServerError,
+		data{Content: fmt.Sprintf("Failed %s %s", upath, err)},
 		"base",
-		"html/pages/folder.tmpl",
+		"html/pages/error.tmpl",
 	)
-	if err != nil {
+
+	if renderError != nil {
+		// give up and use standard error handling
+		slog.Error("Could not render error template", slog.String("file", upath), slog.Any("error", renderError))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
