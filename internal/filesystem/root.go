@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-// Root represents a folder structure.
+// Root represents a folder and its contents.
 type Root struct {
 	root *os.Root
 }
 
-// NewRoot creates a Root to work with a folder structure.
+// NewRoot creates a Root for working with a folder and its contents.
 func NewRoot(name string) (Root, error) {
 	root, err := os.OpenRoot(name)
 	if err != nil {
@@ -25,8 +25,8 @@ func NewRoot(name string) (Root, error) {
 	}, nil
 }
 
-// File represents a folder or file in the Root.
-// This simplifies file handling because the important information is provided in one struct instead of an os.File.
+// File represents either a file or a directory within a Root.
+// This simplifies file handling because the important information is kept in one struct instead of an os.File.
 type File struct {
 	root    *Root
 	RelPath string
@@ -37,7 +37,7 @@ type File struct {
 }
 
 // AsOsFile is used when the underlying os.File is needed.
-// Ensure to close it after usage.
+// Make sure to close it after use.
 func (f *File) AsOsFile() (*os.File, error) {
 	file, err := f.root.root.Open(f.RelPath)
 	if err != nil {
@@ -47,7 +47,7 @@ func (f *File) AsOsFile() (*os.File, error) {
 	return file, nil
 }
 
-// Children returns the children of the current File. It returns nil if the file is not a folder.
+// Children returns the children of the current File. It returns nil if the File is not a directory.
 func (f *File) Children() ([]File, error) {
 	if !f.IsDir {
 		return nil, nil

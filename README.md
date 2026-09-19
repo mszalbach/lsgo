@@ -4,7 +4,7 @@
 
 ## Description
 
-LSGo lets you browse files through a web browser. Like the Linux `ls` command, it is designed only to list files, with the added ability to preview and download them.
+LSGo lets you browse files in a web browser. Like the Linux `ls` command, it is designed to list files only, with the added ability to preview and download them.
 It is not intended for editing or creating files.
 
 ## Installation
