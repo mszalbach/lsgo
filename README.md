@@ -28,6 +28,8 @@ The default settings listen on `localhost:8080`, so the server is only available
 
 Run LSGo as an unprivileged user, preferably inside a container. Only expose folders that are safe for the intended users to browse.
 
+When running the Docker image, it defaults to the user/group `7777:0`. This means the mounted folder must be readable by that user, or you must override the runtime user with a different UID/GID. For example, if the host directory is owned by a different user, run the container with `--user` or adjust file permissions so the process can read the content before it starts serving files.
+
 LSGo is configured with command-line flags. Run `lsgo --help` to see all available options.
 
 The most important ones are:
