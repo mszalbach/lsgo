@@ -13,7 +13,6 @@
   <body>
     <nav aria-label="Breadcrumb" class="breadcrumb">
         <ol>
-            <li><a href="/files">Home</a></li>
             {{range .Breadcrumb}}
             <li><a href="/files/{{.RelPath}}">{{.Name}}</a></li>
             {{end}}

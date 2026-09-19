@@ -15,7 +15,16 @@ type htmlRenderer struct {
 
 var funcs = template.FuncMap{
 	"bytes": humanReadableBytes,
+	"back":  backBreadcrumb,
 	"last":  lastBreadcrumb,
+}
+
+func backBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
+	if len(breadcrumbs) > 1 {
+		return breadcrumbs[len(breadcrumbs)-2]
+	}
+	// Fallback to most of the time Home
+	return breadcrumbs[len(breadcrumbs)-1]
 }
 
 func lastBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {

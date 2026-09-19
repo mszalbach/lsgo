@@ -76,6 +76,7 @@ func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
 func createBreadcrumb(folderRelPath string) []breadcrumb {
 	parts := strings.Split(folderRelPath, "/")
 	var breadcrumbs []breadcrumb
+	breadcrumbs = append(breadcrumbs, breadcrumb{Name: "Home", RelPath: relPath{path: ""}})
 	current := ""
 	for _, part := range parts {
 		if part != "" && part != "." {

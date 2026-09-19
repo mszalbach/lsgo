@@ -161,18 +161,18 @@ func Test_should_have_breadcrumb_navigation(t *testing.T) {
 		url                string
 		expectedBreadcrumb []breadcrumb
 	}{
-		"root": {url: "http://localhost/files", expectedBreadcrumb: []breadcrumb{{name: "Home", href: "/files"}}},
+		"root": {url: "http://localhost/files", expectedBreadcrumb: []breadcrumb{{name: "Home", href: "/files/"}}},
 		"level1": {
 			url: "http://localhost/files/level1",
 			expectedBreadcrumb: []breadcrumb{
-				{name: "Home", href: "/files"},
+				{name: "Home", href: "/files/"},
 				{name: "level1", href: "/files/level1"},
 			},
 		},
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles/folder%3Fquery=2",
 			expectedBreadcrumb: []breadcrumb{
-				{name: "Home", href: "/files"},
+				{name: "Home", href: "/files/"},
 				{name: "level1", href: "/files/level1"},
 				{name: "specialFiles", href: "/files/level1/specialFiles"},
 				{name: "folder?query=2", href: "/files/level1/specialFiles/folder%3Fquery=2"},
@@ -278,7 +278,7 @@ func Test_should_return_not_found_for_nonexistent_resource(t *testing.T) {
 	server := createTestServer(t)
 
 	// When
-	res, err := server.Client().Get("http://localhost/files/DOES-NOT-EXIST.md")
+	res, err := server.Client().Get("http://localhost/files/A/B/C/DOES-NOT-EXIST.md")
 	require.NoError(t, err)
 
 	// Then
@@ -293,6 +293,11 @@ func Test_should_return_not_found_for_nonexistent_resource(t *testing.T) {
 	// Tells the user which file was not found.
 	missingFileText := doc.Find("section > p").First().Text()
 	assert.Contains(t, missingFileText, "DOES-NOT-EXIST.md")
+
+	// Lets the user return to the parent
+	turnBackLink := doc.Find("a:contains('Turn back.')")
+	href, _ := turnBackLink.Attr("href")
+	assert.Equal(t, "/files/A/B/C", href)
 }
 
 func Test_http_security_headers(t *testing.T) {
