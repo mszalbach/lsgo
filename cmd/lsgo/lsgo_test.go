@@ -288,7 +288,7 @@ func Test_should_return_not_found_for_nonexistent_resource(t *testing.T) {
 
 	// Has a breadcrumb.
 	actualBreadcrumb := doc.Find("nav li > a")
-	assert.Equal(t, 1, actualBreadcrumb.Length())
+	assert.Greater(t, actualBreadcrumb.Length(), 1)
 
 	// Tells the user which file was not found.
 	missingFileText := doc.Find("section > p").First().Text()
