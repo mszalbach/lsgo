@@ -146,7 +146,7 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 		return
 	}
 
-	isDownload := r.URL.Query().Get("download") != ""
+	isDownload := r.URL.Query().Get("download") == "1"
 	isFileTooLarge := file.Size > s.maxInlineFileSize
 	isUnsecureMediaType := !isSafeMediaType
 
