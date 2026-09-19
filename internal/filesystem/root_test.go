@@ -46,6 +46,12 @@ func Test_root_returns_information_about_file(t *testing.T) {
 			expectedName:    "a.yaml",
 			expectedRelPath: "folder/folderInFolder/a.yaml",
 		},
+		"./folder/symlinkFolder": {
+			name:            "symlinkFolder",
+			isDir:           true,
+			expectedName:    "symlinkFolder",
+			expectedRelPath: "symlinkFolder",
+		},
 	}
 
 	// Given
@@ -83,6 +89,13 @@ func Test_file_returns_its_children(t *testing.T) {
 			expectedChildren: []child{
 				{name: "a.yaml", relPath: "folder/folderInFolder/a.yaml"},
 				{name: "b.yaml", relPath: "folder/folderInFolder/b.yaml"},
+			},
+		},
+		"symlink folder": {
+			name: "symlinkFolder",
+			expectedChildren: []child{
+				{name: "a.yaml", relPath: "symlinkFolder/a.yaml"},
+				{name: "b.yaml", relPath: "symlinkFolder/b.yaml"},
 			},
 		},
 	}

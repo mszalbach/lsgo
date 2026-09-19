@@ -28,7 +28,7 @@ func NewRoot(name string) (Root, error) {
 // File represents a folder or file in the Root.
 // This simplifies file handling because the important information is provided in one struct instead of an os.File.
 type File struct {
-	root    *os.Root
+	root    *Root
 	RelPath string
 	Name    string
 	IsDir   bool
@@ -39,7 +39,7 @@ type File struct {
 // AsOsFile is used when the underlying os.File is needed.
 // Ensure to close it after usage.
 func (f *File) AsOsFile() (*os.File, error) {
-	file, err := f.root.Open(f.RelPath)
+	file, err := f.root.root.Open(f.RelPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %s: %w", f.RelPath, err)
 	}
@@ -53,31 +53,36 @@ func (f *File) Children() ([]File, error) {
 		return nil, nil
 	}
 
-	dir, err := f.root.Open(f.RelPath)
+	dir, err := f.root.File(f.RelPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open %s to get children: %w", f.RelPath, err)
 	}
-	defer dir.Close()
+	osDir, err := dir.AsOsFile()
+	if err != nil {
+		return nil, fmt.Errorf("could not use os file %s to get children: %w", f.RelPath, err)
+	}
+	defer osDir.Close()
 
-	dirEntries, err := dir.ReadDir(-1)
+	dirEntries, err := osDir.ReadDir(-1)
 	if err != nil {
 		return nil, fmt.Errorf("could not read the folder %s: %w", f.RelPath, err)
 	}
 
 	var children []File
 	for _, entry := range dirEntries {
-		info, err := entry.Info()
+		// Entries stats would not follow symlinks and the isDir property would be wrong so correctly open the child
+		file, err := f.root.File(path.Join(f.RelPath, entry.Name()))
 		if err != nil {
 			continue
 		}
 
 		children = append(children, File{
 			root:    f.root,
-			RelPath: path.Join(f.RelPath, entry.Name()),
-			Name:    entry.Name(),
-			IsDir:   entry.IsDir(),
-			Size:    info.Size(),
-			ModTime: info.ModTime(),
+			RelPath: file.RelPath,
+			Name:    file.Name,
+			IsDir:   file.IsDir,
+			Size:    file.Size,
+			ModTime: file.ModTime,
 		})
 	}
 
@@ -101,7 +106,7 @@ func (r *Root) File(name string) (*File, error) {
 		IsDir:   stat.IsDir(),
 		Size:    stat.Size(),
 		ModTime: stat.ModTime(),
-		root:    r.root,
+		root:    r,
 		RelPath: name,
 	}, nil
 }
