@@ -4,13 +4,9 @@
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
-.PHONY: build
-build: ## Build the lsgo binary.
-	@CGO_ENABLED=0 go build -v -o dist/lsgo ./cmd/lsgo/...
-
-.PHONY: docker
-docker: build # builds the dockercontainer
-	@docker build --build-arg TARGETPLATFORM=dist -t lsgo .
+.PHONY: dist
+dist: ## Create a test release.
+	@goreleaser release --snapshot --clean
 
 .PHONY: test
 test: ## Run the tests.
