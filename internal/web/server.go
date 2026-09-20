@@ -17,17 +17,12 @@ import (
 // Router provides everything needed to serve the LSGo webpage.
 type Router struct {
 	root              filesystem.Root
-	htmlRenderer      *htmlRenderer
+	htmlRenderer      *HTMLRenderer
 	maxInlineFileSize int64
 }
 
 // NewRouter creates a Router.
-func NewRouter(root filesystem.Root, maxInlineFileSize int64) (Router, error) {
-	renderer, err := newHTMLRenderer(assets.Templates, "html/base.tmpl")
-	if err != nil {
-		return Router{}, err
-	}
-
+func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize int64) (Router, error) {
 	return Router{
 		root:              root,
 		htmlRenderer:      renderer,

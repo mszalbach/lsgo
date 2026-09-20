@@ -18,7 +18,7 @@ func Test_human_readable_bytes(t *testing.T) {
 		},
 		"MB": {
 			size:              5_000_000,
-			expectedHumanSize: "5 MB",
+			expectedHumanSize: "66 MB",
 		},
 		"MB rounded": {
 			size:              5_999_999,
