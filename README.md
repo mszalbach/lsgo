@@ -78,9 +78,9 @@ You can open a GitHub issue.
 * [x] prevent overly large files from being rendered
 * [x] Packaging
   * Docker container
-* [ ] configurable base path for proxy usage
-* [ ] Signed Docker image and SBOM attestations
+* [x] configurable base path for proxy usage
 * [ ] download folder/files as zip
+* [ ] Signed Docker image and SBOM attestations
 * [ ] OIDC login
 * [ ] dark mode support
 
