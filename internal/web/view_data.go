@@ -12,7 +12,6 @@ import (
 
 // data the overal struct given to all templates.
 type data struct {
-	BaseURL    string
 	Breadcrumb []breadcrumb
 	Content    any
 }

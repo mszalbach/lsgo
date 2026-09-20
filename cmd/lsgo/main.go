@@ -14,7 +14,6 @@ import (
 	// needed for scratch images to have timezone information
 	_ "time/tzdata"
 
-	"github.com/mszalbach/lsgo/internal/assets"
 	"github.com/mszalbach/lsgo/internal/filesystem"
 	"github.com/mszalbach/lsgo/internal/web"
 )
@@ -23,35 +22,30 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	config, err := parseFlags(os.Args[1:], os.Stderr)
-	if err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			os.Exit(0)
-		}
-		os.Exit(2)
-	}
+	addr := flag.String("addr", "localhost:8080", "Address to listen on. Default only listens on localhost.")
+	folder := flag.String("folder", "./public", "Folder to serve.")
+	maxInlineFileSize := flag.Int64(
+		"max-inline-file-size",
+		1_048_576,
+		"Maximum file size to display inline in bytes; larger files are download-only.",
+	)
+	flag.Parse()
 
-	root, err := filesystem.NewRoot(config.folder)
+	root, err := filesystem.NewRoot(*folder)
 	if err != nil {
-		slog.Error("Could not open root folder", slog.String("folder", config.folder), slog.Any("error", err))
+		slog.Error("Could not open root folder", slog.String("folder", *folder), slog.Any("error", err))
 		os.Exit(1)
 	}
 	defer root.Close()
 
-	renderer, err := web.NewHTMLRenderer(config.baseURL, assets.Templates, "html/base.tmpl")
-	if err != nil {
-		slog.Error("Could not create handler for web server", slog.Any("error", err))
-		panic(err)
-	}
-
-	webServer, err := web.NewRouter(root, renderer, config.maxInlineFileSize)
+	webServer, err := web.NewRouter(root, *maxInlineFileSize)
 	if err != nil {
 		slog.Error("Could not create handler for web server", slog.Any("error", err))
 		panic(err)
 	}
 
 	server := http.Server{
-		Addr:              config.addr,
+		Addr:              *addr,
 		Handler:           webServer.Routes(),
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      5 * time.Second,
@@ -62,7 +56,7 @@ func main() {
 	defer stop()
 
 	go func() {
-		slog.Info("Serving folder", "address", config.addr, "folder", config.folder)
+		slog.Info("Serving folder", "address", *addr, "folder", *folder)
 		err := server.ListenAndServe()
 		if !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Failed to start server", "error", err)
