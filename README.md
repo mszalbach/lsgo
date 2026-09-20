@@ -34,11 +34,12 @@ LSGo is configured with command-line flags. Run `lsgo --help` to see all availab
 
 The most important ones are:
 
-| Flag                     | Description                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| `--addr`                 | Address where the server listens. Defaults to `localhost:8080`.                             |
-| `--folder`               | Folder exposed through the web UI. Defaults to `./public`.                                  |
-| `--max-inline-file-size` | Maximum file size to display inline in bytes. Larger files are available as downloads only. |
+| Flag                     | Description                                                                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `--addr`                 | Address where the server listens. Defaults to `localhost:8080`.                                                                           |
+| `--base-url`             | Base URL path for serving behind a reverse proxy. It is normalized to start and end with a slash, for example `/files/`. Defaults to `/`. |
+| `--folder`               | Folder exposed through the web UI. Defaults to `./public`.                                                                                |
+| `--max-inline-file-size` | Maximum file size to display inline in bytes. Larger files are available as downloads only. Defaults to `1_048_576`.                      |
 
 ### Run with Docker
 

@@ -4,6 +4,6 @@
 <section aria-labelledby="not-found-title">
     <h1 id="not-found-title">File not found</h1>
     <p>The file or folder <code>{{.Content}}</code> does not exist.</p>
-    <p><a href="/files/{{(back .Breadcrumb).RelPath}}">Turn back.</a></p>
+    <p><a href="files/{{(back .Breadcrumb).RelPath}}">Turn back.</a></p>
 </section>
 {{end}}
