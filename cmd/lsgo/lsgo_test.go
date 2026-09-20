@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mszalbach/lsgo/internal/assets"
 	"github.com/mszalbach/lsgo/internal/filesystem"
 	"github.com/mszalbach/lsgo/internal/web"
 	"github.com/stretchr/testify/assert"
@@ -28,11 +27,6 @@ func TestMain(m *testing.M) {
 
 func createTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
-	return createTestServerWithPath(t, "/")
-}
-
-func createTestServerWithPath(t *testing.T, baseURL string) *httptest.Server {
-	t.Helper()
 	root, err := filesystem.NewRoot("testdata")
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -41,9 +35,7 @@ func createTestServerWithPath(t *testing.T, baseURL string) *httptest.Server {
 			t.Errorf("failed to clean up resource: %v", err)
 		}
 	})
-	renderer, err := web.NewHTMLRenderer(baseURL, assets.Templates, "html/base.tmpl")
-	require.NoError(t, err)
-	webServer, err := web.NewRouter(root, renderer, 5)
+	webServer, err := web.NewRouter(root, 5)
 	require.NoError(t, err)
 
 	testServer := httptest.NewTestServer(t, webServer.Routes())
@@ -85,21 +77,21 @@ func Test_should_list_files_in_folder(t *testing.T) {
 		"root": {
 			url: "http://localhost/files",
 			expectedChildren: []child{
-				{name: "a.md", href: "files/a.md", isDir: false},
-				{name: "level1", href: "files/level1", isDir: true},
+				{name: "a.md", href: "/files/a.md", isDir: false},
+				{name: "level1", href: "/files/level1", isDir: true},
 			},
 		},
 		"trailing slash should behave like without trailing slash": {
 			url: "http://localhost/files/",
 			expectedChildren: []child{
-				{name: "a.md", href: "files/a.md", isDir: false},
-				{name: "level1", href: "files/level1", isDir: true},
+				{name: "a.md", href: "/files/a.md", isDir: false},
+				{name: "level1", href: "/files/level1", isDir: true},
 			},
 		},
 		"level2": {
 			url: "http://localhost/files/level1/level2",
 			expectedChildren: []child{
-				{name: "emptyDir", href: "files/level1/level2/emptyDir", isDir: true},
+				{name: "emptyDir", href: "/files/level1/level2/emptyDir", isDir: true},
 			},
 		},
 		"empty folder": {
@@ -109,16 +101,16 @@ func Test_should_list_files_in_folder(t *testing.T) {
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles",
 			expectedChildren: []child{
-				{name: "folder?query=2", href: "files/level1/specialFiles/folder%3Fquery=2", isDir: true},
-				{name: "folder#fragment", href: "files/level1/specialFiles/folder%23fragment", isDir: true},
+				{name: "folder?query=2", href: "/files/level1/specialFiles/folder%3Fquery=2", isDir: true},
+				{name: "folder#fragment", href: "/files/level1/specialFiles/folder%23fragment", isDir: true},
 				{
 					name: "<a href=\"google.com\">Link file",
-					href: "files/level1/specialFiles/%3Ca%20href=%22google.com%22%3ELink%20file",
+					href: "/files/level1/specialFiles/%3Ca%20href=%22google.com%22%3ELink%20file",
 				},
-				{name: "javascript.html", href: "files/level1/specialFiles/javascript.html", isDir: false},
+				{name: "javascript.html", href: "/files/level1/specialFiles/javascript.html", isDir: false},
 				{
 					name:  "html-without-extension",
-					href:  "files/level1/specialFiles/html-without-extension",
+					href:  "/files/level1/specialFiles/html-without-extension",
 					isDir: false,
 				},
 			},
@@ -169,21 +161,21 @@ func Test_should_have_breadcrumb_navigation(t *testing.T) {
 		url                string
 		expectedBreadcrumb []breadcrumb
 	}{
-		"root": {url: "http://localhost/files", expectedBreadcrumb: []breadcrumb{{name: "Home", href: "files/"}}},
+		"root": {url: "http://localhost/files", expectedBreadcrumb: []breadcrumb{{name: "Home", href: "/files/"}}},
 		"level1": {
 			url: "http://localhost/files/level1",
 			expectedBreadcrumb: []breadcrumb{
-				{name: "Home", href: "files/"},
-				{name: "level1", href: "files/level1"},
+				{name: "Home", href: "/files/"},
+				{name: "level1", href: "/files/level1"},
 			},
 		},
 		"links must be correctly encoded or the user could not navigate": {
 			url: "http://localhost/files/level1/specialFiles/folder%3Fquery=2",
 			expectedBreadcrumb: []breadcrumb{
-				{name: "Home", href: "files/"},
-				{name: "level1", href: "files/level1"},
-				{name: "specialFiles", href: "files/level1/specialFiles"},
-				{name: "folder?query=2", href: "files/level1/specialFiles/folder%3Fquery=2"},
+				{name: "Home", href: "/files/"},
+				{name: "level1", href: "/files/level1"},
+				{name: "specialFiles", href: "/files/level1/specialFiles"},
+				{name: "folder?query=2", href: "/files/level1/specialFiles/folder%3Fquery=2"},
 			},
 		},
 	}
@@ -305,7 +297,7 @@ func Test_should_return_not_found_for_nonexistent_resource(t *testing.T) {
 	// Lets the user return to the parent
 	turnBackLink := doc.Find("a:contains('Turn back.')")
 	href, _ := turnBackLink.Attr("href")
-	assert.Equal(t, "files/A/B/C", href)
+	assert.Equal(t, "/files/A/B/C", href)
 }
 
 func Test_http_security_headers(t *testing.T) {
@@ -332,50 +324,4 @@ func Test_http_security_headers(t *testing.T) {
 			assert.Equal(t, "same-site", res.Header.Get("Cross-Origin-Resource-Policy"))
 		})
 	}
-}
-
-func Test_should_have_html_base_path(t *testing.T) {
-	testCases := map[string]struct {
-		baseURL          string
-		expectedBasePath string
-	}{
-		"default":      {baseURL: "/", expectedBasePath: "/"},
-		"behind proxy": {baseURL: "/ls/", expectedBasePath: "/ls/"},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			// Given
-			server := createTestServerWithPath(t, tc.baseURL)
-			// When
-			res, err := server.Client().Get("http://localhost/files")
-			require.NoError(t, err)
-
-			// Then
-			doc, err := goquery.NewDocumentFromReader(res.Body)
-			require.NoError(t, err)
-			actualBasePath := doc.Find("head > base")
-			href, _ := actualBasePath.Attr("href")
-			assert.Equal(t, tc.expectedBasePath, href)
-		})
-	}
-}
-
-func Test_should_have_a_turn_back_link_for_empty_folders(t *testing.T) {
-	// Given
-	server := createTestServer(t)
-
-	// When
-	res, err := server.Client().Get("http://localhost/files/level1/level2/emptyDir")
-	require.NoError(t, err)
-
-	// Then
-	assert.Equal(t, http.StatusOK, res.StatusCode)
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	require.NoError(t, err)
-
-	// Lets the user return to the parent
-	turnBackLink := doc.Find("a:contains('Turn back.')")
-	href, _ := turnBackLink.Attr("href")
-	assert.Equal(t, "files/level1/level2", href)
 }

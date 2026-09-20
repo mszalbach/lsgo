@@ -2,19 +2,19 @@
 <!doctype html>
 <html lang='en'>
   <head>
-    <base href="{{.BaseURL}}">
     <meta charset='utf-8'>
     <title>{{template "page:title" .}} LSGo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="static/css/water.light.min.css">
-    <link rel="stylesheet" href="static/css/ls.css">
-    <script src="static/js/sort.js" defer></script>
+
+    <link rel="stylesheet" href="/static/css/water.light.min.css">
+    <link rel="stylesheet" href="/static/css/ls.css">
+    <script src="/static/js/sort.js" defer></script>
   </head>
   <body>
     <nav aria-label="Breadcrumb" class="breadcrumb">
         <ol>
             {{range .Breadcrumb}}
-            <li><a href="files/{{.RelPath}}">{{.Name}}</a></li>
+            <li><a href="/files/{{.RelPath}}">{{.Name}}</a></li>
             {{end}}
         </ol>
     </nav>

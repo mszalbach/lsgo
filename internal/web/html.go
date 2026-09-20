@@ -8,11 +8,9 @@ import (
 	"net/http"
 )
 
-// HTMLRenderer struct to render go templates for the htlm representation.
-type HTMLRenderer struct {
+type htmlRenderer struct {
 	templateFS fs.FS
 	templates  *template.Template
-	baseURL    string
 }
 
 var funcs = template.FuncMap{
@@ -33,24 +31,22 @@ func lastBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
 	return breadcrumbs[len(breadcrumbs)-1]
 }
 
-// NewHTMLRenderer creates a HtmlRenderer.
 // Copied from https://www.alexedwards.net/blog/how-i-use-htmx-with-go
-func NewHTMLRenderer(baseURL string, templateFS fs.FS, sharedTemplateFiles ...string) (*HTMLRenderer, error) {
+func newHTMLRenderer(templateFS fs.FS, sharedTemplateFiles ...string) (*htmlRenderer, error) {
 	sharedTemplates, err := template.New("").Funcs(funcs).ParseFS(templateFS, sharedTemplateFiles...)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse embedded templates: %w", err)
 	}
 
-	r := &HTMLRenderer{
+	r := &htmlRenderer{
 		templateFS: templateFS,
 		templates:  sharedTemplates,
-		baseURL:    baseURL,
 	}
 
 	return r, nil
 }
 
-func (h *HTMLRenderer) render(
+func (h *htmlRenderer) render(
 	w http.ResponseWriter,
 	status int,
 	data data,
@@ -70,7 +66,6 @@ func (h *HTMLRenderer) render(
 	}
 
 	buf := new(bytes.Buffer)
-	data.BaseURL = h.baseURL
 	err = ts.ExecuteTemplate(buf, templateName, data)
 	if err != nil {
 		return fmt.Errorf("could not execute template %s: %w", templateName, err)
