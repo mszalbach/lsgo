@@ -8,6 +8,10 @@ help: ## Show this help.
 dist: ## Create a test release.
 	@goreleaser release --snapshot --clean
 
+.PHONY: build
+build: ## Only executable and Docker, without the rest.
+	@goreleaser release --snapshot --clean --skip=archive,sbom
+
 .PHONY: test
 test: ## Run the tests.
 	@go test ./...
@@ -21,7 +25,7 @@ fmt: ## Format the code.
 	@golangci-lint fmt
 
 .PHONY: check
-check: fmt lint test ## Helper to format, lint and test in one go
+check: fmt lint test ## Helper to format, lint and test in one go.
 
 .PHONY: clean
 clean: ## Clean the build artifacts.
