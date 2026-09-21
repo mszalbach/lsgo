@@ -1,0 +1,14 @@
+on:
+  pull_request:
+    types: [opened, edited, synchronized]
+
+jobs:
+  main:
+    name: Semantic Pull Request
+    runs-on: ubuntu-slim
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

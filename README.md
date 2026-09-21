@@ -86,7 +86,9 @@ You can open a GitHub issue.
 
 ## Contributing
 
-This is a small test project, and contributions are not currently planned. However, they are not prohibited—feel free to open an issue to discuss your ideas.
+Contributions are welcome. Please open an issue to discuss a larger change before submitting a pull request.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit and pull request conventions, as well as the release process.
 
 ## Development
 

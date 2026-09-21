@@ -28,6 +28,28 @@ dockers_v2:
       - lsgo
 changelog:
   sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - "merge conflict"
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: "Features"
+      regexp: '^feat[(\w\s)]*:'
+      order: 0
+    - title: "Bug Fixes"
+      regexp: '^fix[(\w\s)]*:'
+      order: 1
+    - title: "Maintenance & Refactoring"
+      regexp: '^refactor[(\w\s)]*:'
+      order: 2
+    - title: "Other Changes"
+      order: 999
 sboms:
   - args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
