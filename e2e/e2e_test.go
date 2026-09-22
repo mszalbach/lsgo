@@ -67,8 +67,6 @@ func Test_browser_usage(t *testing.T) {
 		breadcrumbs[0].MustClick()
 		page.MustWaitLoad()
 		require.Len(t, page.MustElements("nav[aria-label='Breadcrumb'] a"), 1)
-
-		page.MustScreenshot("test.png")
 	})
 
 	t.Run("Folder Content", func(t *testing.T) {
