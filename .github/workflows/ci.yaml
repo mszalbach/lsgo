@@ -36,7 +36,7 @@ jobs:
           install-only: true
 
       - name: Run golangci-lint
-        run: make check-ci
+        run: make lint-ci
 
       - name: Run Tests
         run: make test
