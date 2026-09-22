@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -46,7 +47,14 @@ func Test_browser_usage(t *testing.T) {
 	require.NoError(t, err)
 
 	baseURL := "http://localhost:" + port.Port()
-	browser := rod.New().MustConnect().Timeout(10 * time.Second)
+
+	headless := os.Getenv("ROD_HEADLESS") != "false"
+	l := launcher.New().
+		Headless(headless).
+		NoSandbox(true)
+
+	url := l.MustLaunch()
+	browser := rod.New().ControlURL(url).MustConnect().Timeout(10 * time.Second)
 
 	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
