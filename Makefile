@@ -14,15 +14,21 @@ build: ## Only executable and Docker, without the rest.
 
 .PHONY: test
 test: ## Run the tests.
-	@go test ./...
+	@cd e2e && go test ./...
+
+.PHONY: e2e
+e2e: build ## Run the e2e tests.
+	@cd e2e && go test ./...
 
 .PHONY: lint
 lint: ## Run the linter.
 	@golangci-lint run --fix
+	@cd e2e && golangci-lint run --config ../.golangci.yaml ./...
 
 .PHONY: fmt
 fmt: ## Format the code.
 	@golangci-lint fmt
+	@cd e2e && golangci-lint fmt
 
 .PHONY: check
 check: fmt lint test ## Helper to format, lint and test in one go.
