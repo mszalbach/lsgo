@@ -23,6 +23,11 @@ e2e: build ## Run the e2e tests.
 .PHONY: lint
 lint: ## Run the linter.
 	@golangci-lint run --fix
+	@cd e2e && golangci-lint run --config ../.golangci.yaml ./... --fix
+
+.PHONY: lint-ci
+lint-ci: ## Run the linter for ci without auto fix.
+	@golangci-lint run
 	@cd e2e && golangci-lint run --config ../.golangci.yaml ./...
 
 .PHONY: fmt
