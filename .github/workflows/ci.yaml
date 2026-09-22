@@ -76,7 +76,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     needs:
       - lint
-      # - e2e
+      - test
+      - e2e
       - vulcheck
     permissions:
       actions: read # needed for sbom task to see the release
