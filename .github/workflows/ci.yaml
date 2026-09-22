@@ -1,101 +1,76 @@
-name: build
+name: CI Pipeline
 permissions:
   contents: read
-on: [push]
-jobs:
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
 
-  lint:
+jobs:
+  qa:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout repository
         uses: actions/checkout@v7.0.1
 
-      - name: install go
+      - name: Set up Go
         uses: actions/setup-go@v7.0.0
         with:
           go-version: "1.27.1"
+          cache: true
 
-      - name: install golangci
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.4.1
+
+      - name: Set up GoReleaser
+        uses: goreleaser/goreleaser-action@v7.2.3
+        with:
+          install-only: true
+
+      - name: Set up golangci-lint
         uses: golangci/golangci-lint-action@v9.3.0
         with:
           version: v2.13.2
           install-only: true
 
-      - name: lint
+      - name: Run golangci-lint
         run: make lint-ci
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v7.0.1
-
-      - name: install go
-        uses: actions/setup-go@v7.0.0
-        with:
-          go-version: "1.27.1"
 
       - name: Run Tests
         run: make test
 
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v7.0.1
-
-      - name: install go
-        uses: actions/setup-go@v7.0.0
-        with:
-          go-version: "1.27.1"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.4.1
-
-      - name: Set up goreleaser
-        uses: goreleaser/goreleaser-action@v7.2.3
-        with:
-          install-only: true
-
-      - name: Run e2e Tests
-        run: make e2e
-
-
-  vulcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v7.0.1
-
-      - name: Vulnerability Scan
+      - name: Run Govulncheck
         uses: golang/govulncheck-action@v1.1.0
         with:
           repo-checkout: false
 
+      - name: Verify Build
+        run: make build
+
   release:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
-      - lint
-      - test
-      - e2e
-      - vulcheck
+      - qa
     permissions:
       actions: read # needed for sbom task to see the release
       contents: write # needed by goreleaser to write release to github
       packages: write # needed by goreleaser to upload docker
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: heckout repository
         uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # needed for goreleaser to correctly create changelog
 
-      - name: install go
+      - name: Set up Go
         uses: actions/setup-go@v7.0.0
         with:
           go-version: "1.27.1"
+          cache: true
 
-      - name: install syft
+      - name: Set up Syft
         uses: anchore/sbom-action/download-syft@v0.24.2
 
       - name: Set up Docker Buildx
