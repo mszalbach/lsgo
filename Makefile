@@ -14,7 +14,7 @@ build: ## Only executable and Docker, without the rest.
 
 .PHONY: test
 test: ## Run the tests.
-	@cd e2e && go test ./...
+	@go test ./...
 
 .PHONY: e2e
 e2e: build ## Run the e2e tests.
