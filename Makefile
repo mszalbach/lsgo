@@ -20,6 +20,10 @@ test: ## Run the tests.
 lint: ## Run the linter.
 	@golangci-lint run --fix
 
+.PHONY: lint-ci
+lint-ci: ## Run the linter for ci without auto fix.
+	@golangci-lint run
+
 .PHONY: fmt
 fmt: ## Format the code.
 	@golangci-lint fmt
