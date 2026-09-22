@@ -47,14 +47,9 @@ func Test_browser_usage(t *testing.T) {
 	require.NoError(t, err)
 
 	baseURL := "http://localhost:" + port.Port()
-
-	headless := os.Getenv("ROD_HEADLESS") != "false"
-	l := launcher.New().
-		Headless(headless).
-		NoSandbox(true)
-
-	url := l.MustLaunch()
-	browser := rod.New().ControlURL(url).MustConnect().Timeout(10 * time.Second)
+	binary := launcher.New().Headless(true).NoSandbox(true)
+	debugURL := binary.MustLaunch()
+	browser := rod.New().ControlURL(debugURL).MustConnect().Timeout(10 * time.Second)
 
 	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
@@ -72,6 +67,8 @@ func Test_browser_usage(t *testing.T) {
 		breadcrumbs[0].MustClick()
 		page.MustWaitLoad()
 		require.Len(t, page.MustElements("nav[aria-label='Breadcrumb'] a"), 1)
+
+		page.MustScreenshot("test.png")
 	})
 
 	t.Run("Folder Content", func(t *testing.T) {
