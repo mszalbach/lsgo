@@ -123,3 +123,55 @@ Write unit tests only when an integration test would be disproportionately diffi
 - Tests may be slower and require more setup than isolated unit tests.
 - Failures may be less localized, so test names and assertions should make the affected user-visible behavior clear.
 - Some edge cases and complex combinations are still covered with unit tests.
+
+## 20260922-1 End-to-end tests in a separate Go module
+
+accepted
+
+### Context
+
+End-to-end tests require framework dependencies that are not needed by the production application.
+They should also not reuse production code for testing, because that can make bugs harder to find when the test exercises the same code that produces the output.
+
+### Decision
+
+Keep the end-to-end tests in a separate Go module.
+
+### Consequences
+
+- End-to-end dependencies cannot affect the production module.
+- The production `go.sum` stays smaller and cleaner.
+- Running all tests requires additional CI setup.
+
+## 20260922-2 End-to-end tests with Testcontainers
+
+accepted
+
+### Context
+
+End-to-end tests require a managed container that can be started, reached, and closed reliably.
+
+### Decision
+
+Use Testcontainers to manage the containers used by end-to-end tests.
+
+### Consequences
+
+- Test containers have a defined lifecycle and can be reached by the tests.
+- The tests depend on a container runtime.
+
+## 20260922-3 End-to-end tests with `go-rod`
+
+accepted
+
+### Context
+
+`go-rod` was the first suitable example found for browser-based end-to-end tests.
+
+### Decision
+
+Use `go-rod` for the initial end-to-end browser tests.
+
+### Consequences
+
+- The project may need to migrate because `go-rod` appears outdated and unmaintained.
