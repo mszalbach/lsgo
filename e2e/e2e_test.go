@@ -90,6 +90,22 @@ func Test_browser_usage(t *testing.T) {
 		assert.Contains(t, page.MustElement("body").MustText(), "Top file")
 	})
 
+	t.Run("File can be downloaded with the download button", func(t *testing.T) {
+		incognito := browser.MustIncognito()
+		page := incognito.MustPage(baseURL)
+		t.Cleanup(page.MustClose)
+
+		downloadDir := t.TempDir()
+		waitForDownload := page.Browser().WaitDownload(downloadDir)
+		page.MustElement("a[aria-label='Download hello.md']").MustClick()
+		download := waitForDownload()
+		require.Equal(t, "hello.md", download.SuggestedFilename)
+
+		downloaded, err := os.ReadFile(filepath.Join(downloadDir, download.GUID))
+		require.NoError(t, err)
+		assert.Equal(t, "Top file", string(downloaded))
+	})
+
 	t.Run("Unsafe html file is provided as download", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage(baseURL + "/files/folder")
