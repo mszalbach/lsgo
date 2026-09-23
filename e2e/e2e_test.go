@@ -50,13 +50,13 @@ func Test_browser_usage(t *testing.T) {
 	binary := launcher.New().Headless(true).NoSandbox(true)
 	debugURL := binary.MustLaunch()
 	browser := rod.New().ControlURL(debugURL).MustConnect().Timeout(10 * time.Second)
-	defer browser.MustClose()
+	t.Cleanup(browser.MustClose)
 
 	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage(baseURL + "/files/folder")
-		defer page.MustClose()
+		t.Cleanup(page.MustClose)
 
 		breadcrumbs := page.MustElements("nav[aria-label='Breadcrumb'] a")
 		require.Len(t, breadcrumbs, 2)
@@ -73,7 +73,7 @@ func Test_browser_usage(t *testing.T) {
 	t.Run("Folder Content", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage(baseURL)
-		defer page.MustClose()
+		t.Cleanup(page.MustClose)
 
 		helloFile := page.MustElement("a[href='files/hello.md']")
 		assert.Equal(t, "hello.md", helloFile.MustText())
@@ -118,7 +118,7 @@ func Test_browser_usage(t *testing.T) {
 	t.Run("Normal file is shown in browser", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage(baseURL + "/files/hello.md")
-		defer page.MustClose()
+		t.Cleanup(page.MustClose)
 
 		assert.Contains(t, page.MustElement("body").MustText(), "Top file")
 	})
@@ -162,7 +162,7 @@ func Test_browser_usage(t *testing.T) {
 	t.Run("Not existing files produce a warning", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage(baseURL + "/files/folder/NOT-EXISTS")
-		defer page.MustClose()
+		t.Cleanup(page.MustClose)
 
 		bodyText := page.MustElement("body").MustText()
 		assert.Contains(t, bodyText, "NOT-EXISTS does not exist")
