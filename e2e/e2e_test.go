@@ -82,6 +82,39 @@ func Test_browser_usage(t *testing.T) {
 		assert.Equal(t, "folder", folder.MustText())
 	})
 
+	t.Run("Files can be sorted by name", func(t *testing.T) {
+		incognito := browser.MustIncognito()
+		page := incognito.MustPage(baseURL)
+		t.Cleanup(page.MustClose)
+
+		nameHeader := page.MustElement("th[data-sort-key='name']")
+		fileNames := func() []string {
+			links := page.MustElements("tbody tr td[data-sort-column='name'] a")
+			names := make([]string, 0, len(links))
+			for _, link := range links {
+				names = append(names, link.MustText())
+			}
+			return names
+		}
+
+		ariaSort := nameHeader.MustAttribute("aria-sort")
+		require.NotNil(t, ariaSort)
+		assert.Equal(t, "ascending", *ariaSort)
+		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
+
+		nameHeader.MustClick()
+		ariaSort = nameHeader.MustAttribute("aria-sort")
+		require.NotNil(t, ariaSort)
+		assert.Equal(t, "descending", *ariaSort)
+		assert.Equal(t, []string{"folder", "zeta.md", "hello.md", "alpha.md"}, fileNames())
+
+		nameHeader.MustClick()
+		ariaSort = nameHeader.MustAttribute("aria-sort")
+		require.NotNil(t, ariaSort)
+		assert.Equal(t, "ascending", *ariaSort)
+		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
+	})
+
 	t.Run("Normal file is shown in browser", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage(baseURL + "/files/hello.md")
