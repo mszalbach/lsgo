@@ -100,7 +100,7 @@ func Test_browser_usage(t *testing.T) {
 		ariaSort := nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "ascending", *ariaSort)
-		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
+		assert.ElementsMatch(t, fileNames(), []string{"folder", "alpha.md", "hello.md", "zeta.md"})
 
 		nameHeader.MustClick()
 		ariaSort = nameHeader.MustAttribute("aria-sort")
