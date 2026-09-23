@@ -11,5 +11,14 @@
   "postUpdateOptions": [
     "gomodTidy"
   ],
+  "packageRules": [
+    {
+      "description": "Use test semantic commit type for e2e dependencies",
+      "matchFileNames": [
+        "e2e/go.mod"
+      ],
+      "commitMessagePrefix": "test"
+    }
+  ],
   "automerge": true
 }
