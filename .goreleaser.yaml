@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 snapshot:
-  version_template: 0.0.0-snapshot 
+  version_template: 0.0.0-snapshot
 
 before:
   hooks:
@@ -33,24 +33,28 @@ changelog:
   use: github
   filters:
     exclude:
-      - "^docs:"
       - "^test:"
-      - "^chore:"
       - "^ci:"
       - "merge conflict"
       - Merge pull request
       - Merge branch
-  groups:
-    - title: "Features"
-      regexp: '^feat[(\w\s)]*:'
+  groups: # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
+    - title: "Breaking Changes"
+      regexp: '^.*?(\([[:word:]]+\))??!:.+$'
       order: 0
-    - title: "Bug Fixes"
-      regexp: '^fix[(\w\s)]*:'
-      order: 1
-    - title: "Maintenance & Refactoring"
-      regexp: '^refactor[(\w\s)]*:'
-      order: 2
-    - title: "Other Changes"
+    - title: "Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 100
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: "Documentation"
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 300
+    - title: "Dependency updates"
+      regexp: '^.*?(feat|fix|chore)\(deps?.+\)!?:.+$'
+      order: 400
+    - title: "Other work"
       order: 999
 sboms:
   - args: ["$artifact", "--output", "cyclonedx-json=$document"]
