@@ -30,10 +30,6 @@ lint-ci: ## Run the linter for ci without auto fix.
 	@golangci-lint run
 	@cd e2e && golangci-lint run --config ../.golangci.yaml ./...
 
-.PHONY: lint-ci
-lint-ci: ## Run the linter for ci without auto fix.
-	@golangci-lint run
-
 .PHONY: fmt
 fmt: ## Format the code.
 	@golangci-lint fmt
