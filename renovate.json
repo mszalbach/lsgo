@@ -17,7 +17,7 @@
       "matchFileNames": [
         "e2e/go.mod"
       ],
-      "commitMessagePrefix": "test"
+      "commitMessagePrefix": "test(deps):"
     }
   ],
   "automerge": true
