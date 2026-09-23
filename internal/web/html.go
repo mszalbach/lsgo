@@ -16,12 +16,12 @@ type HTMLRenderer struct {
 }
 
 var funcs = template.FuncMap{
-	"bytes": humanReadableBytes,
-	"back":  backBreadcrumb,
-	"last":  lastBreadcrumb,
+	"bytes":             humanReadableBytes,
+	"parentBreadcrumb":  parentBreadcrumb,
+	"currentBreadcrumb": currentBreadcrumb,
 }
 
-func backBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
+func parentBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
 	if len(breadcrumbs) > 1 {
 		return breadcrumbs[len(breadcrumbs)-2]
 	}
@@ -29,7 +29,7 @@ func backBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
 	return breadcrumbs[len(breadcrumbs)-1]
 }
 
-func lastBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
+func currentBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
 	return breadcrumbs[len(breadcrumbs)-1]
 }
 

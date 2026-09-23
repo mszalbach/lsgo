@@ -123,3 +123,65 @@ Write unit tests only when an integration test would be disproportionately diffi
 - Tests may be slower and require more setup than isolated unit tests.
 - Failures may be less localized, so test names and assertions should make the affected user-visible behavior clear.
 - Some edge cases and complex combinations are still covered with unit tests.
+
+## 20260922-1 End-to-end tests in a separate Go module
+
+accepted
+
+### Context
+
+LSGo could benefit from end-to-end tests that verify the Docker container works and, in particular, that its links work in a real browser.
+
+End-to-end tests could be placed alongside the current tests, in a separate folder, or in a separate Go module.
+
+End-to-end tests require framework dependencies that are not needed by the production application.
+They should also not reuse production code for testing, because doing so can make bugs harder to find when the tests exercise the same code that produces the output.
+
+### Decision
+
+Store the end-to-end tests in a separate Go module to keep the production dependencies clean and separate the tests from the production code.
+
+### Consequences
+
+- End-to-end dependencies cannot affect the production module.
+- The production `go.sum` stays smaller and cleaner.
+- Running all tests requires additional CI setup because the tests are now split across two different modules.
+
+## 20260922-2 End-to-end tests with Testcontainers
+
+accepted
+
+### Context
+
+End-to-end tests require a managed container that can be started, accessed, and stopped reliably.
+
+### Decision
+
+Use Testcontainers to manage the containers used by end-to-end tests.
+
+### Consequences
+
+- Testcontainers provides a defined container lifecycle and solutions for mounting files and accessing the container through random ports.
+- The tests depend on a container runtime.
+
+## 20260922-3 End-to-end tests with `go-rod`
+
+accepted
+
+### Context
+
+To control a test browser, a framework is needed to handle the browser interaction so that the tests can focus on their intended behavior.
+Ideally, the framework also downloads a browser so the end-to-end tests can run easily both locally and on GitHub.
+
+`go-rod` was the first suitable example found for browser-based end-to-end tests.
+`chromedp` was another candidate, but it is lower-level and requires more setup because it does not download a browser.
+
+All other suitable solutions would require switching languages and would probably lead to Playwright, which would add Node and heavier operating-system dependencies.
+
+### Decision
+
+Use `go-rod` for the initial end-to-end browser tests.
+
+### Consequences
+
+- The project may need to migrate because `go-rod` appears outdated and unmaintained.
