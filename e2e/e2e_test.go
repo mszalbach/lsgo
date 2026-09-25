@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"archive/zip"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -100,7 +102,7 @@ func Test_browser_usage(t *testing.T) {
 		ariaSort := nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "ascending", *ariaSort)
-		assert.ElementsMatch(t, fileNames(), []string{"folder", "alpha.md", "hello.md", "zeta.md"})
+		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
 
 		nameHeader.MustClick()
 		ariaSort = nameHeader.MustAttribute("aria-sort")
@@ -169,5 +171,36 @@ func Test_browser_usage(t *testing.T) {
 
 		turnBackLink := page.MustElement("section a[href='files/folder']")
 		assert.Equal(t, "Turn back.", turnBackLink.MustText())
+	})
+
+	t.Run("Folder can be downloaded with the download button", func(t *testing.T) {
+		incognito := browser.MustIncognito()
+		page := incognito.MustPage(baseURL)
+		t.Cleanup(page.MustClose)
+
+		downloadDir := t.TempDir()
+		waitForDownload := page.Browser().WaitDownload(downloadDir)
+		page.MustElement("a[aria-label='Download folder']").MustClick()
+		download := waitForDownload()
+		require.Equal(t, "folder.zip", download.SuggestedFilename)
+
+		archive, err := zip.OpenReader(filepath.Join(downloadDir, download.GUID))
+		require.NoError(t, err)
+		t.Cleanup(func() { require.NoError(t, archive.Close()) })
+
+		require.Len(t, archive.File, 1)
+		require.Equal(t, "javascript.html", archive.File[0].Name)
+
+		file, err := archive.File[0].Open()
+		require.NoError(t, err)
+		t.Cleanup(func() { require.NoError(t, file.Close()) })
+
+		downloaded, err := io.ReadAll(file)
+		require.NoError(t, err)
+		assert.Equal(
+			t,
+			"<!DOCTYPE html>\n<html>\n    <script>console.log(\"Hello\")</script>\n</html>",
+			string(downloaded),
+		)
 	})
 }
