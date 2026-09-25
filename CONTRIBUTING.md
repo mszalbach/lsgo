@@ -11,6 +11,8 @@ Common types:
 - `docs`: Documentation changes
 - `refactor`: Code changes that neither fix a bug nor add a feature
 - `chore`: Maintenance tasks, dependency updates, CI changes
+- `test`: Fixing or improving the tests
+- `ci`: Changes to the GitHub Actions or release automation
 
 ### Examples
 - `feat(cli): add --output-json flag`
