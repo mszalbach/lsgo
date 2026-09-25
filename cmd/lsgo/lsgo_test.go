@@ -1,9 +1,13 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -35,12 +39,7 @@ func createTestServerWithPath(t *testing.T, baseURL string) *httptest.Server {
 	t.Helper()
 	root, err := filesystem.NewRoot("testdata")
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		err := root.Close()
-		if err != nil {
-			t.Errorf("failed to clean up resource: %v", err)
-		}
-	})
+	t.Cleanup(func() { require.NoError(t, root.Close()) })
 	renderer, err := web.NewHTMLRenderer(baseURL, assets.Templates, "html/base.tmpl")
 	require.NoError(t, err)
 	webServer, err := web.NewRouter(root, renderer, 5)
@@ -214,21 +213,6 @@ func Test_should_have_breadcrumb_navigation(t *testing.T) {
 	}
 }
 
-func Test_should_download_folders_as_zip(t *testing.T) {
-	// Given
-	server := createTestServer(t)
-
-	// When
-	res, err := server.Client().Get("http://localhost/files/level1?download=1")
-	require.NoError(t, err)
-
-	// Then
-	// means this is a download
-	assert.Equal(t, http.StatusOK, res.StatusCode)
-	assert.NotEmpty(t, res.Header.Get("Content-Disposition"))
-	assert.Equal(t, "application/zip", res.Header.Get("Content-Type"))
-}
-
 func Test_should_serve_files(t *testing.T) {
 	testCases := map[string]struct {
 		url                  string
@@ -239,11 +223,6 @@ func Test_should_serve_files(t *testing.T) {
 			url:                  "http://localhost/files/a.md",
 			expectedMediaType:    "text/markdown; charset=utf-8",
 			expectedDownloadOnly: false,
-		},
-		"safe markdown with download requested": {
-			url:                  "http://localhost/files/a.md?download=1",
-			expectedMediaType:    "text/markdown; charset=utf-8",
-			expectedDownloadOnly: true,
 		},
 		"large markdown": {
 			url:                  "http://localhost/files/level1/large-file.md",
@@ -393,4 +372,109 @@ func Test_should_have_a_turn_back_link_for_empty_folders(t *testing.T) {
 	turnBackLink := doc.Find("a:contains('Turn back.')")
 	href, _ := turnBackLink.Attr("href")
 	assert.Equal(t, "files/level1/level2", href)
+}
+
+func Test_should_provide_downloads_as_zip(t *testing.T) {
+	testCases := map[string]struct {
+		paths             []string
+		expectedFileNames []string
+	}{
+		"single file": {
+			paths:             []string{"a.md"},
+			expectedFileNames: []string{"a.md"},
+		},
+		"folder": {
+			paths: []string{"level1"},
+			expectedFileNames: []string{
+				"large-file.md",
+				"level2/",
+				"level2/emptyDir/",
+				"specialFiles/",
+				"specialFiles/<a href=\"google.com\">Link file",
+				"specialFiles/folder#fragment/",
+				"specialFiles/folder#fragment/.gitkeep",
+				"specialFiles/folder?query=2/",
+				"specialFiles/folder?query=2/.gitkeep",
+				"specialFiles/html-without-extension",
+				"specialFiles/javascript.html",
+			},
+		},
+		"multiple files selected": {
+			paths:             []string{"a.md", "level1/specialFiles/javascript.html"},
+			expectedFileNames: []string{"a.md", "level1/specialFiles/javascript.html"},
+		},
+		"folder and file selected": {
+			paths:             []string{"a.md", "level1/specialFiles/folder#fragment"},
+			expectedFileNames: []string{"a.md", ".gitkeep"},
+		},
+	}
+	// Given
+	server := createTestServer(t)
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// When
+
+			res, err := server.Client().PostForm("http://localhost/api/download/zip", url.Values{
+				"paths": tc.paths,
+			})
+			require.NoError(t, err)
+
+			// Then
+			assert.Equal(t, http.StatusOK, res.StatusCode)
+
+			zipBytes, err := io.ReadAll(res.Body)
+			require.NoError(t, err)
+
+			bytesReader := bytes.NewReader(zipBytes)
+			zipReader, err := zip.NewReader(bytesReader, int64(len(zipBytes)))
+			require.NoError(t, err)
+
+			var actualFileNames []string
+			for _, file := range zipReader.File {
+				actualFileNames = append(actualFileNames, file.Name)
+			}
+
+			assert.ElementsMatch(t, actualFileNames, tc.expectedFileNames)
+		})
+	}
+}
+
+func Test_should_fail_for_non_valid_zip_requests(t *testing.T) {
+	testCases := map[string]struct {
+		baseURL string
+		paths   []string
+	}{
+		"non existing path": {
+			paths: []string{"DOES-NOT-EXIST.md"},
+		},
+		"valid + non existing path": {
+			paths: []string{"a.md", "DOES-NOT-EXIST.md"},
+		},
+		"path traversal": {
+			paths: []string{"../lsgo_test.go"},
+		},
+		"absolute file linux": {
+			paths: []string{"/tmp"},
+		},
+		"absolute file windows": {
+			paths: []string{"C:\\Users\\Public"},
+		},
+	}
+	// Given
+	server := createTestServer(t)
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// When
+
+			res, err := server.Client().PostForm("http://localhost/api/download/zip", url.Values{
+				"paths": tc.paths,
+			})
+			require.NoError(t, err)
+
+			// Then
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		})
+	}
 }

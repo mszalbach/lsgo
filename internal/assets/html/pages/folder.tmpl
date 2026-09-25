@@ -4,32 +4,36 @@
 
 {{define "page:content"}}
 {{if .Content}}
-<table>
-  <thead>
-    <tr>
-      <th data-sort-key="name" tabindex="0" role="button" aria-sort="none">Name</th>
-      <th data-sort-key="size" tabindex="0" role="button" aria-sort="none">Size</th>
-      <th data-sort-key="time" tabindex="0" role="button" aria-sort="none">Last Modified</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{range .Content}}
-    <tr data-sort-group="{{if .IsDir}}0{{else}}1{{end}}">
-      {{if .IsDir}}
-        <td data-sort-column="name" data-sort-value="{{.Name}}"><a href="files/{{.RelPath}}" class="icon-link"><img src="static/icons/folder.svg" alt="folder" class="icon">{{.Name}}</a></td>
-      {{else}}
-        <td data-sort-column="name" data-sort-value="{{.Name}}"><a href="files/{{.RelPath}}" class="icon-link"><img src="static/icons/article.svg" alt="file" class="icon">{{.Name}}</a></td>
+
+<form action="/api/download/zip" method="POST">
+  <button type="submit">Download Selected</button>
+  <table>
+    <thead>
+      <tr>
+        <th data-sort-key="name" tabindex="0" role="button" aria-sort="none">Name</th>
+        <th data-sort-key="size" tabindex="0" role="button" aria-sort="none">Size</th>
+        <th data-sort-key="time" tabindex="0" role="button" aria-sort="none">Last Modified</th>
+        <th>Select</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Content}}
+      <tr data-sort-group="{{if .IsDir}}0{{else}}1{{end}}">
+        {{if .IsDir}}
+          <td data-sort-column="name" data-sort-value="{{.Name}}"><a href="files/{{.RelPath}}" class="icon-link"><img src="static/icons/folder.svg" alt="folder" class="icon">{{.Name}}</a></td>
+        {{else}}
+          <td data-sort-column="name" data-sort-value="{{.Name}}"><a href="files/{{.RelPath}}" class="icon-link"><img src="static/icons/article.svg" alt="file" class="icon">{{.Name}}</a></td>
+        {{end}}
+        <td data-sort-column="size" data-sort-value="{{.Size}}">{{.Size | bytes}}</td>
+        <td data-sort-column="time" data-sort-value="{{.ModTime.Unix}}">{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
+        <td>
+          <td><input type="checkbox" name="paths" value="{{.RelPath}}"/></td>
+        </td>
+      </tr>
       {{end}}
-      <td data-sort-column="size" data-sort-value="{{.Size}}">{{.Size | bytes}}</td>
-      <td data-sort-column="time" data-sort-value="{{.ModTime.Unix}}">{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
-      <td>
-        <a aria-label="Download {{.Name}}" href="files/{{.RelPath}}?download=1"><img src="static/icons/download.svg" alt="download" class="icon"></a>
-      </td>
-    </tr>
-    {{end}}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</form>
 {{else}}
 <section aria-labelledby="empty-folder">
 <p><blockquote>None but devils play past here...</blockquote></p>

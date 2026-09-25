@@ -27,13 +27,12 @@ func WriteZipArchive(w io.Writer, files ...*File) error {
 }
 
 func addFolder(zipWriter *zip.Writer, folder *File) error {
-	subRoot, err := folder.root.osRoot.OpenRoot(folder.RelPath)
+	subFS, err := folder.AsFS()
 	if err != nil {
-		return fmt.Errorf("could not open folder %s as fs: %w", folder.RelPath, err)
+		return fmt.Errorf("could not get sub fs %s for adding to zip: %w", folder.RelPath, err)
 	}
-	defer subRoot.Close()
 
-	err = zipWriter.AddFS(subRoot.FS())
+	err = zipWriter.AddFS(subFS)
 	if err != nil {
 		return fmt.Errorf("could not add folder %s to zip: %w", folder.RelPath, err)
 	}
@@ -57,7 +56,7 @@ func addFile(zipWriter *zip.Writer, file *File) error {
 		return fmt.Errorf("could not create file info header for file %s to zip: %w", file.RelPath, err)
 	}
 
-	header.Name = file.Name
+	header.Name = file.RelPath
 	header.Method = zip.Deflate
 
 	fileHeader, err := zipWriter.CreateHeader(header)

@@ -3,6 +3,7 @@ package filesystem
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"time"
@@ -43,8 +44,17 @@ func (f *File) AsOsFile() (*os.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %s: %w", f.RelPath, err)
 	}
-
 	return file, nil
+}
+
+// AsFS will return a sub filesystem from the root
+func (f *File) AsFS() (fs.FS, error) {
+	subFS, err := fs.Sub(f.root.osRoot.FS(), f.RelPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not create sub fs for %s: %w", f.RelPath, err)
+	}
+
+	return subFS, nil
 }
 
 // Children returns the children of the current File. It returns nil if the File is not a directory.

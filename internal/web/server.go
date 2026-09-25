@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/mszalbach/lsgo/internal/assets"
 	"github.com/mszalbach/lsgo/internal/filesystem"
@@ -33,10 +34,11 @@ func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize i
 // Routes constructs the handlers and binds them to the correct paths to serve LSGo.
 func (s Router) Routes() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", rootHandler)
-	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
-	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)
+	mux.HandleFunc("GET /", rootHandler)
+	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
+	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
+	mux.HandleFunc("POST /api/download/zip", s.downloadZipHandler)
 
 	return owaspMiddleware(mux)
 }
@@ -60,11 +62,46 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
-		s.serveFolder(w, r, file)
+		s.serveFolder(w, file)
 		return
 	}
 
 	s.serveFile(w, r, file)
+}
+
+func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	selectedPaths := r.PostForm["paths"]
+	if len(selectedPaths) == 0 {
+		http.Error(w, "No files selected", http.StatusBadRequest)
+		return
+	}
+
+	files := make([]*filesystem.File, 0, len(selectedPaths))
+	for _, selectedPath := range selectedPaths {
+		file, err := s.root.File(selectedPath)
+		if err != nil {
+			http.Error(w, "File not found", http.StatusBadRequest)
+			return
+		}
+		files = append(files, file)
+	}
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
+		"filename": "lsgo-" + time.Now().Format("2006-01-02_150405") + ".zip",
+	}))
+
+	err = filesystem.WriteZipArchive(w, files...)
+	if err != nil {
+		slog.Error("Could not write zip archive for files %s: %w", slog.Any("files", files), slog.Any("error", err))
+		return
+	}
 }
 
 func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File, err error) {
@@ -99,26 +136,11 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File
 	}
 }
 
-func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesystem.File) {
+func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
 	folderData, err := folderDataFrom(dir)
 	if err != nil {
 		s.httpError(w, dir, err)
-		return
-	}
-
-	isDownload := r.URL.Query().Get("download") == "1"
-
-	if isDownload {
-		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
-			"filename": breadcrumb[len(breadcrumb)-1].Name + ".zip",
-		}))
-		w.Header().Set("Content-Type", "application/zip")
-		err := filesystem.WriteZipArchive(w, dir)
-		if err != nil {
-			slog.Error("AHH", slog.Any("error", err))
-			return
-		}
 		return
 	}
 
@@ -156,11 +178,10 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 		return
 	}
 
-	isDownload := r.URL.Query().Get("download") == "1"
 	isFileTooLarge := file.Size > s.maxInlineFileSize
 	isUnsecureMediaType := !isSafeMediaType
 
-	if isDownload || isFileTooLarge || isUnsecureMediaType {
+	if isFileTooLarge || isUnsecureMediaType {
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
 			"filename": file.Name,
 		}))
