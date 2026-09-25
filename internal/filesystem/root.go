@@ -10,7 +10,7 @@ import (
 
 // Root represents a folder and its contents.
 type Root struct {
-	root *os.Root
+	osRoot *os.Root
 }
 
 // NewRoot creates a Root for working with a folder and its contents.
@@ -21,7 +21,7 @@ func NewRoot(name string) (Root, error) {
 	}
 
 	return Root{
-		root: root,
+		osRoot: root,
 	}, nil
 }
 
@@ -39,7 +39,7 @@ type File struct {
 // AsOsFile is used when the underlying os.File is needed.
 // Make sure to close it after use.
 func (f *File) AsOsFile() (*os.File, error) {
-	file, err := f.root.root.Open(f.RelPath)
+	file, err := f.root.osRoot.Open(f.RelPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %s: %w", f.RelPath, err)
 	}
@@ -91,7 +91,7 @@ func (f *File) Children() ([]File, error) {
 
 // File returns a File from the current Root.
 func (r *Root) File(name string) (*File, error) {
-	rootFile, err := r.root.Open(name)
+	rootFile, err := r.osRoot.Open(name)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file %s: %w", name, err)
 	}
@@ -113,7 +113,7 @@ func (r *Root) File(name string) (*File, error) {
 
 // Close closes the Root.
 func (r *Root) Close() error {
-	err := r.root.Close()
+	err := r.osRoot.Close()
 	if err != nil {
 		return fmt.Errorf("could not close root: %w", err)
 	}
