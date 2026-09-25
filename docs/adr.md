@@ -185,3 +185,27 @@ Use `go-rod` for the initial end-to-end browser tests.
 ### Consequences
 
 - The project may need to migrate because `go-rod` appears outdated and unmaintained.
+
+## 20260925-1 Zip files are directly written to `http.ResponseWriter`
+
+accepted
+
+### Context
+
+ZIP archives can be created in a temporary file before being served, or the ZIP stream can be written directly to the HTTP response.
+Writing the stream directly is simple, uses minimal memory and disk space, and allows the client to start downloading immediately.
+However, the response status is committed before the archive is complete, so errors and client disconnections cannot be handled cleanly.
+
+Creating a temporary file first allows for better error handling and makes it possible to stop creating the archive when the client disconnects.
+It also makes the content length known, allowing a browser to show download progress.
+
+### Decision
+
+Write ZIP archives directly to the HTTP response.
+
+### Consequences
+
+- The implementation is simple and does not require temporary file handling.
+- Clients can start downloading the archive before it is complete.
+- Errors after the response starts and client disconnections cannot be handled cleanly.
+- This decision may need to change if serving very large folders or improved error handling becomes more important.
