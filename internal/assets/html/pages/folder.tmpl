@@ -24,9 +24,7 @@
       <td data-sort-column="size" data-sort-value="{{.Size}}">{{.Size | bytes}}</td>
       <td data-sort-column="time" data-sort-value="{{.ModTime.Unix}}">{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
       <td>
-        {{if not .IsDir}}
         <a aria-label="Download {{.Name}}" href="files/{{.RelPath}}?download=1"><img src="static/icons/download.svg" alt="download" class="icon"></a>
-        {{end}}
       </td>
     </tr>
     {{end}}
