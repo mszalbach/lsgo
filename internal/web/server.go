@@ -60,7 +60,7 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if file.IsDir {
-		s.serveFolder(w, file)
+		s.serveFolder(w, r, file)
 		return
 	}
 
@@ -94,16 +94,31 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File
 
 	if renderError != nil {
 		slog.Error("Could not render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// zip writes directly to w, so there is nothing which can be done when an error happens. See ADR-20260925-1.
 		return
 	}
 }
 
-func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
+func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
 	folderData, err := folderDataFrom(dir)
 	if err != nil {
 		s.httpError(w, dir, err)
+		return
+	}
+
+	isDownload := r.URL.Query().Get("download") == "1"
+
+	if isDownload {
+		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
+			"filename": breadcrumb[len(breadcrumb)-1].Name + ".zip",
+		}))
+		w.Header().Set("Content-Type", "application/zip")
+		err := filesystem.WriteZipArchive(w, dir)
+		if err != nil {
+			slog.Error("AHH", slog.Any("error", err))
+			return
+		}
 		return
 	}
 

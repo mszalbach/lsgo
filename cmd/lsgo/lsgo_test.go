@@ -214,6 +214,21 @@ func Test_should_have_breadcrumb_navigation(t *testing.T) {
 	}
 }
 
+func Test_should_download_folders_as_zip(t *testing.T) {
+	// Given
+	server := createTestServer(t)
+
+	// When
+	res, err := server.Client().Get("http://localhost/files/level1?download=1")
+	require.NoError(t, err)
+
+	// Then
+	// means this is a download
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+	assert.NotEmpty(t, res.Header.Get("Content-Disposition"))
+	assert.Equal(t, "application/zip", res.Header.Get("Content-Type"))
+}
+
 func Test_should_serve_files(t *testing.T) {
 	testCases := map[string]struct {
 		url                  string
