@@ -1,6 +1,6 @@
 [tools]
 air = "1.67.4"
 go = "1.27.1"
-golangci-lint = "2.13.2"
+golangci-lint = "2.14.0"
 goreleaser = "2.18.2"
 syft = "1.52.0"
