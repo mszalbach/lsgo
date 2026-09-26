@@ -42,7 +42,7 @@ func createTestServerWithPath(t *testing.T, baseURL string) *httptest.Server {
 	t.Cleanup(func() { require.NoError(t, root.Close()) })
 	renderer, err := web.NewHTMLRenderer(baseURL, assets.Templates, "html/base.tmpl")
 	require.NoError(t, err)
-	webServer := web.NewRouter(root, renderer, 5)
+	webServer := web.NewRouter(root, renderer, 5, 1)
 
 	testServer := httptest.NewTestServer(t, webServer.Routes())
 	return testServer

@@ -77,6 +77,7 @@ The most important ones are:
 | `--base-url`             | Base URL path for serving behind a reverse proxy. It is normalized to start and end with a slash, for example `/files/`. Defaults to `/`. |
 | `--folder`               | Folder exposed through the web UI. Defaults to `./public`.                                                                                |
 | `--max-inline-file-size` | Maximum file size to display inline in bytes. Larger files are available as downloads only. Defaults to `1_048_576`.                      |
+| `--log-sample-rate`      | Sampling rate for successful, non-error logs (0.0 = 0%, 1.0 = 100%). Errors and failures are always logged. Defaults to `0.05`.           |
 
 ### Run with Docker
 
