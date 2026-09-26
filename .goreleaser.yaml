@@ -28,6 +28,10 @@ dockers_v2:
       - linux/arm64
     ids:
       - lsgo
+docker_signs:
+  - cmd: cosign
+    args: ['sign', '--yes', '${artifact}@${digest}']
+    artifacts: manifests
 changelog:
   sort: asc
   use: github
