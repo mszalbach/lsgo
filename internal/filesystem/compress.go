@@ -34,7 +34,7 @@ func WriteZipArchive(w io.Writer, files ...*File) error {
 }
 
 func addFolder(zipWriter *zip.Writer, folder *File) error {
-	subFS, err := folder.AsFS()
+	subFS, err := folder.asFS()
 	if err != nil {
 		return fmt.Errorf("failed to get sub fs %s for adding to zip: %w", folder.RelPath, err)
 	}

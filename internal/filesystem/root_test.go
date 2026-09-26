@@ -1,7 +1,6 @@
 package filesystem_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/mszalbach/lsgo/internal/filesystem"
@@ -134,24 +133,6 @@ func Test_file_can_be_opened_as_an_os_file(t *testing.T) {
 
 	// Then
 	assert.Equal(t, "testdata/hello.md", osFile.Name())
-}
-
-func Test_folder_can_be_opened_as_an_fs_and_has_correct_relative_path(t *testing.T) {
-	// Given
-	root := createTestdataRoot(t)
-
-	folder, err := root.File("folder")
-	require.NoError(t, err)
-
-	// When
-	folderFS, err := folder.AsFS()
-	require.NoError(t, err)
-
-	fileInFolder, err := folderFS.Open(".")
-	require.NoError(t, err)
-
-	assert.IsType(t, &os.File{}, fileInFolder)
-	assert.Equal(t, "testdata/folder", fileInFolder.(*os.File).Name())
 }
 
 func Test_root_cannot_be_created_for_a_nonexistent_folder(t *testing.T) {
