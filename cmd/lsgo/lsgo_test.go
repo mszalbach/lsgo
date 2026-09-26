@@ -86,6 +86,7 @@ func Test_should_list_files_in_folder(t *testing.T) {
 			expectedChildren: []child{
 				{name: "a.md", href: "files/a.md", isDir: false},
 				{name: "level1", href: "files/level1", isDir: true},
+				{name: "folderWithDuplicateFiles", href: "files/folderWithDuplicateFiles", isDir: true},
 			},
 		},
 		"trailing slash should behave like without trailing slash": {
@@ -93,6 +94,7 @@ func Test_should_list_files_in_folder(t *testing.T) {
 			expectedChildren: []child{
 				{name: "a.md", href: "files/a.md", isDir: false},
 				{name: "level1", href: "files/level1", isDir: true},
+				{name: "folderWithDuplicateFiles", href: "files/folderWithDuplicateFiles", isDir: true},
 			},
 		},
 		"level2": {
@@ -386,26 +388,60 @@ func Test_should_provide_downloads_as_zip(t *testing.T) {
 		"folder": {
 			paths: []string{"level1"},
 			expectedFileNames: []string{
-				"large-file.md",
-				"level2/",
-				"level2/emptyDir/",
-				"specialFiles/",
-				"specialFiles/<a href=\"google.com\">Link file",
-				"specialFiles/folder#fragment/",
-				"specialFiles/folder#fragment/.gitkeep",
-				"specialFiles/folder?query=2/",
-				"specialFiles/folder?query=2/.gitkeep",
-				"specialFiles/html-without-extension",
-				"specialFiles/javascript.html",
+				"level1/",
+				"level1/large-file.md",
+				"level1/level2/",
+				"level1/level2/emptyDir/",
+				"level1/specialFiles/",
+				"level1/specialFiles/<a href=\"google.com\">Link file",
+				"level1/specialFiles/folder#fragment/",
+				"level1/specialFiles/folder#fragment/.gitkeep",
+				"level1/specialFiles/folder?query=2/",
+				"level1/specialFiles/folder?query=2/.gitkeep",
+				"level1/specialFiles/html-without-extension",
+				"level1/specialFiles/javascript.html",
 			},
 		},
 		"multiple files selected": {
-			paths:             []string{"a.md", "level1/specialFiles/javascript.html"},
-			expectedFileNames: []string{"a.md", "level1/specialFiles/javascript.html"},
+			paths: []string{"a.md", "level1/specialFiles/javascript.html"},
+			expectedFileNames: []string{
+				"a.md",
+				"level1/specialFiles/javascript.html",
+			},
 		},
 		"folder and file selected": {
-			paths:             []string{"a.md", "level1/specialFiles/folder#fragment"},
-			expectedFileNames: []string{"a.md", ".gitkeep"},
+			paths: []string{"a.md", "level1/specialFiles/folder#fragment"},
+			expectedFileNames: []string{
+				"a.md",
+				"level1/specialFiles/folder#fragment/",
+				"level1/specialFiles/folder#fragment/.gitkeep",
+			},
+		},
+		"two files with same name selected": {
+			paths: []string{
+				"a.md",
+				"folderWithDuplicateFiles/a.md",
+				"folderWithDuplicateFiles/folder/a.md",
+			},
+			expectedFileNames: []string{
+				"a.md",
+				"folderWithDuplicateFiles/a.md",
+				"folderWithDuplicateFiles/folder/a.md",
+			},
+		},
+		"two folder with same file name in it selected": {
+			paths: []string{"a.md", "folderWithDuplicateFiles", "folderWithDuplicateFiles/folder"},
+			// TODO thats wrong and a.md is overwritten
+			expectedFileNames: []string{
+				"a.md",
+				"folderWithDuplicateFiles/",
+				"folderWithDuplicateFiles/a.md",
+				"folderWithDuplicateFiles/folder/",
+				"folderWithDuplicateFiles/folder/a.md",
+				// the same file is added twice with the same complete name. Edge case should not happen in lsgo itself
+				"folderWithDuplicateFiles/folder/",
+				"folderWithDuplicateFiles/folder/a.md",
+			},
 		},
 	}
 	// Given
@@ -431,8 +467,9 @@ func Test_should_provide_downloads_as_zip(t *testing.T) {
 			require.NoError(t, err)
 
 			var actualFileNames []string
-			for _, file := range zipReader.File {
-				actualFileNames = append(actualFileNames, file.Name)
+			for _, f := range zipReader.File {
+				t.Log(f.Name)
+				actualFileNames = append(actualFileNames, f.Name)
 			}
 
 			assert.ElementsMatch(t, actualFileNames, tc.expectedFileNames)

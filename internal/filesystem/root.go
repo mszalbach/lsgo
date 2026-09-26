@@ -47,7 +47,8 @@ func (f *File) AsOsFile() (*os.File, error) {
 	return file, nil
 }
 
-// AsFS will return a sub filesystem from the root
+// AsFS will return a sub filesystem from the root.
+// So the relative folder paths are kept, which is needed for correctly zipping.
 func (f *File) AsFS() (fs.FS, error) {
 	subFS, err := fs.Sub(f.root.osRoot.FS(), f.RelPath)
 	if err != nil {
