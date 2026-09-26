@@ -11,18 +11,28 @@ import (
 	"time"
 )
 
-type wideLogKey struct{}
+type wideEventKey struct{}
 
-// WideLog holds attributes collected during request execution.
-// TODO sample rate and allow other site to set if this is an error and should be kept?
-type WideLog struct {
+// WideEvent holds attributes collected during request execution.
+type WideEvent struct {
 	mu    sync.Mutex
 	attrs []slog.Attr
 }
 
-// AddLogAttrs appends one or more attributes to the request's wide log.
-func AddLogAttrs(ctx context.Context, attrs ...slog.Attr) {
-	if wl, ok := ctx.Value(wideLogKey{}).(*WideLog); ok {
+var importantEventKeys = map[string]bool{
+	"error": true,
+	"panic": true,
+}
+
+func (e *WideEvent) isImportantEvent() bool {
+	return slices.ContainsFunc(e.attrs, func(attr slog.Attr) bool {
+		return importantEventKeys[attr.Key]
+	})
+}
+
+// AddEventAttrs appends one or more attributes to the request's wide log.
+func AddEventAttrs(ctx context.Context, attrs ...slog.Attr) {
+	if wl, ok := ctx.Value(wideEventKey{}).(*WideEvent); ok {
 		wl.mu.Lock()
 		defer wl.mu.Unlock()
 		wl.attrs = append(wl.attrs, attrs...)
@@ -49,13 +59,13 @@ func (rw *responseWriterWrapper) Write(b []byte) (int, error) {
 	return n, nil
 }
 
-// WideLogMiddleware wraps around all Handler and ensures logging is done in the end
-func WideLogMiddleware(next http.Handler, sampleRate float64) http.Handler {
+// WideEventMiddleware wraps around all Handler and ensures logging is done in the end
+func WideEventMiddleware(next http.Handler, sampleRate float64) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		wl := &WideLog{}
+		we := &WideEvent{}
 
-		ctx := context.WithValue(r.Context(), wideLogKey{}, wl)
+		ctx := context.WithValue(r.Context(), wideEventKey{}, we)
 		r = r.WithContext(ctx)
 
 		wrapped := &responseWriterWrapper{ResponseWriter: w, statusCode: http.StatusOK}
@@ -64,11 +74,11 @@ func WideLogMiddleware(next http.Handler, sampleRate float64) http.Handler {
 			// Handle panics while ensuring the wide log is still emitted
 			if rec := recover(); rec != nil {
 				wrapped.statusCode = http.StatusInternalServerError
-				AddLogAttrs(ctx, slog.Any("panic", rec))
+				AddEventAttrs(ctx, slog.Any("panic", rec))
 				http.Error(wrapped, "Internal Server Error", http.StatusInternalServerError)
 			}
 
-			AddLogAttrs(ctx, slog.String("http.method", r.Method),
+			AddEventAttrs(ctx, slog.String("http.method", r.Method),
 				slog.String("http.path", r.URL.Path),
 				slog.Int("http.status_code", wrapped.statusCode),
 				slog.Int("http.bytes_written", wrapped.bytesWritten),
@@ -77,6 +87,7 @@ func WideLogMiddleware(next http.Handler, sampleRate float64) http.Handler {
 
 			var level slog.Level
 			switch {
+			case we.isImportantEvent():
 			case wrapped.statusCode >= 500:
 				level = slog.LevelError
 			case wrapped.statusCode >= 400:
@@ -85,23 +96,16 @@ func WideLogMiddleware(next http.Handler, sampleRate float64) http.Handler {
 				level = slog.LevelInfo
 			}
 
-			if shouldSample(sampleRate, wrapped.statusCode, wl.attrs) {
-				slog.LogAttrs(ctx, level, "request_completed", wl.attrs...)
+			if shouldSample(we, wrapped.statusCode, sampleRate) {
+				slog.LogAttrs(ctx, level, "request_completed", we.attrs...)
 			}
 		}()
 		next.ServeHTTP(wrapped, r)
 	})
 }
 
-var keysAlwaysLogged = map[string]bool{
-	"error": true,
-	"panic": true,
-}
-
-func shouldSample(sampleRate float64, statusCode int, attrs []slog.Attr) bool {
-	if slices.ContainsFunc(attrs, func(attr slog.Attr) bool {
-		return keysAlwaysLogged[attr.Key]
-	}) {
+func shouldSample(we *WideEvent, statusCode int, sampleRate float64) bool {
+	if we.isImportantEvent() {
 		return true
 	}
 

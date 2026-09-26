@@ -39,8 +39,8 @@ func (s Router) Routes() http.Handler {
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)
 	mux.HandleFunc("GET /", rootHandler)
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
-	mux.Handle("GET /files/{file...}", WideLogMiddleware(http.HandlerFunc(s.lsHandler), s.logSampleRate))
-	mux.Handle("POST /api/download/zip", WideLogMiddleware(http.HandlerFunc(s.downloadZipHandler), s.logSampleRate))
+	mux.Handle("GET /files/{file...}", WideEventMiddleware(http.HandlerFunc(s.lsHandler), s.logSampleRate))
+	mux.Handle("POST /api/download/zip", WideEventMiddleware(http.HandlerFunc(s.downloadZipHandler), s.logSampleRate))
 
 	return owaspMiddleware(mux)
 }
@@ -102,18 +102,18 @@ func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 	err = filesystem.WriteZipArchive(w, files...)
 	if err != nil {
 		// zip writes directly to w, so there is nothing which can be done when an error happens. See ADR-20260925-1.
-		AddLogAttrs(r.Context(), slog.Any("files", files), slog.Any("error", err))
+		AddEventAttrs(r.Context(), slog.Any("files", files), slog.Any("error", err))
 		return
 	}
 }
 
 func (s Router) handleOpenFileError(w http.ResponseWriter, r *http.Request, file *filesystem.File, err error) {
-	AddLogAttrs(r.Context(), slog.Any("error", err))
+	AddEventAttrs(r.Context(), slog.Any("error", err))
 	breadcrumb := createBreadcrumb(file.RelPath)
 	var renderError error
 	switch {
 	case errors.Is(err, os.ErrNotExist):
-		AddLogAttrs(r.Context(), slog.String("error.kind", "not_exist"))
+		AddEventAttrs(r.Context(), slog.String("error.kind", "not_exist"))
 		renderError = s.htmlRenderer.render(
 			w,
 			http.StatusNotFound,
@@ -122,7 +122,7 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, r *http.Request, file
 			"html/pages/notfound.tmpl",
 		)
 	case errors.Is(err, os.ErrPermission):
-		AddLogAttrs(r.Context(), slog.String("error.kind", "permission_denied"))
+		AddEventAttrs(r.Context(), slog.String("error.kind", "permission_denied"))
 		renderError = s.htmlRenderer.render(
 			w,
 			http.StatusForbidden,
@@ -131,13 +131,13 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, r *http.Request, file
 			"html/pages/denied.tmpl",
 		)
 	default:
-		AddLogAttrs(r.Context(), slog.String("error.kind", "unknown"), slog.Any("render_error", err))
+		AddEventAttrs(r.Context(), slog.String("error.kind", "unknown"), slog.Any("render_error", err))
 		s.httpError(w, r, file, err)
 		return
 	}
 
 	if renderError != nil {
-		AddLogAttrs(r.Context(), slog.String("file", file.RelPath), slog.Any("error", renderError))
+		AddEventAttrs(r.Context(), slog.String("file", file.RelPath), slog.Any("error", renderError))
 		return
 	}
 }
@@ -197,7 +197,7 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 }
 
 func (s Router) httpError(w http.ResponseWriter, r *http.Request, file *filesystem.File, err error) {
-	AddLogAttrs(r.Context(), slog.Any("error", err))
+	AddEventAttrs(r.Context(), slog.Any("error", err))
 	breadcrumb := createBreadcrumb(file.RelPath)
 	renderError := s.htmlRenderer.render(
 		w,
@@ -209,7 +209,7 @@ func (s Router) httpError(w http.ResponseWriter, r *http.Request, file *filesyst
 
 	if renderError != nil {
 		// give up and use standard error handling
-		AddLogAttrs(r.Context(), slog.Any("render_error", renderError))
+		AddEventAttrs(r.Context(), slog.Any("render_error", renderError))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
