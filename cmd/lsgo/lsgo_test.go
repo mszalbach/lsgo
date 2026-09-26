@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	err := os.MkdirAll("testdata/level1/level2/emptyDir", 0o750)
 	if err != nil {
 		//nolint:forbidigo // in TestMain there is no default logger
-		fmt.Println("Could not create required empty folder")
+		fmt.Println("Failed to create required empty folder")
 		os.Exit(1)
 	}
 	m.Run()
@@ -42,8 +42,7 @@ func createTestServerWithPath(t *testing.T, baseURL string) *httptest.Server {
 	t.Cleanup(func() { require.NoError(t, root.Close()) })
 	renderer, err := web.NewHTMLRenderer(baseURL, assets.Templates, "html/base.tmpl")
 	require.NoError(t, err)
-	webServer, err := web.NewRouter(root, renderer, 5)
-	require.NoError(t, err)
+	webServer := web.NewRouter(root, renderer, 5)
 
 	testServer := httptest.NewTestServer(t, webServer.Routes())
 	return testServer

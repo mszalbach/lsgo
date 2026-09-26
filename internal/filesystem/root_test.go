@@ -128,7 +128,7 @@ func Test_file_can_be_opened_as_an_os_file(t *testing.T) {
 	require.NoError(t, err)
 
 	// When
-	osFile, err := file.AsOsFile()
+	osFile, err := file.AsOSFile()
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, osFile.Close()) })
 

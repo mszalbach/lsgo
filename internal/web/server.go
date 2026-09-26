@@ -23,12 +23,12 @@ type Router struct {
 }
 
 // NewRouter creates a Router.
-func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize int64) (Router, error) {
+func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize int64) Router {
 	return Router{
 		root:              root,
 		htmlRenderer:      renderer,
 		maxInlineFileSize: maxInlineFileSize,
-	}, nil
+	}
 }
 
 // Routes constructs the handlers and binds them to the correct paths to serve LSGo.
@@ -99,7 +99,8 @@ func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = filesystem.WriteZipArchive(w, files...)
 	if err != nil {
-		slog.Error("Could not write zip archive for files %s: %w", slog.Any("files", files), slog.Any("error", err))
+		// zip writes directly to w, so there is nothing which can be done when an error happens. See ADR-20260925-1.
+		slog.Error("Failed to write zip archive", slog.Any("files", files), slog.Any("error", err))
 		return
 	}
 }
@@ -130,8 +131,7 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File
 	}
 
 	if renderError != nil {
-		slog.Error("Could not render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
-		// zip writes directly to w, so there is nothing which can be done when an error happens. See ADR-20260925-1.
+		slog.Error("Failed to render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
 		return
 	}
 }
@@ -158,7 +158,7 @@ func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
 }
 
 func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
-	osFile, err := file.AsOsFile()
+	osFile, err := file.AsOSFile()
 	if err != nil {
 		s.httpError(w, file, err)
 		return
@@ -179,9 +179,9 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	}
 
 	isFileTooLarge := file.Size > s.maxInlineFileSize
-	isUnsecureMediaType := !isSafeMediaType
+	isUnsafeMediaType := !isSafeMediaType
 
-	if isFileTooLarge || isUnsecureMediaType {
+	if isFileTooLarge || isUnsafeMediaType {
 		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
 			"filename": file.Name,
 		}))
@@ -195,14 +195,14 @@ func (s Router) httpError(w http.ResponseWriter, file *filesystem.File, err erro
 	renderError := s.htmlRenderer.render(
 		w,
 		http.StatusInternalServerError,
-		data{Breadcrumb: breadcrumb, Content: fmt.Sprintf("Failed %s %s", file.RelPath, err)},
+		data{Breadcrumb: breadcrumb, Content: fmt.Sprintf("Failed to serve %s: %s", file.RelPath, err)},
 		"base",
 		"html/pages/error.tmpl",
 	)
 
 	if renderError != nil {
 		// give up and use standard error handling
-		slog.Error("Could not render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
+		slog.Error("Failed to render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

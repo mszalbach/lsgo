@@ -36,31 +36,31 @@ func WriteZipArchive(w io.Writer, files ...*File) error {
 func addFolder(zipWriter *zip.Writer, folder *File) error {
 	subFS, err := folder.AsFS()
 	if err != nil {
-		return fmt.Errorf("could not get sub fs %s for adding to zip: %w", folder.RelPath, err)
+		return fmt.Errorf("failed to get sub fs %s for adding to zip: %w", folder.RelPath, err)
 	}
 
 	err = addFS(zipWriter, folder.RelPath, subFS)
 	if err != nil {
-		return fmt.Errorf("could not add folder %s to zip: %w", folder.RelPath, err)
+		return fmt.Errorf("failed to add folder %s to zip: %w", folder.RelPath, err)
 	}
 	return nil
 }
 
 func addFile(zipWriter *zip.Writer, file *File) error {
-	osFile, err := file.AsOsFile()
+	osFile, err := file.AsOSFile()
 	if err != nil {
-		return fmt.Errorf("could not add file %s to zip: %w", file.RelPath, err)
+		return fmt.Errorf("failed to add file %s to zip: %w", file.RelPath, err)
 	}
 	defer osFile.Close()
 
 	osStats, err := osFile.Stat()
 	if err != nil {
-		return fmt.Errorf("could not get file stats %s: %w", file.RelPath, err)
+		return fmt.Errorf("failed to get file stats %s: %w", file.RelPath, err)
 	}
 
 	header, err := zip.FileInfoHeader(osStats)
 	if err != nil {
-		return fmt.Errorf("could not create file info header for file %s to zip: %w", file.RelPath, err)
+		return fmt.Errorf("failed to create file info header for file %s to zip: %w", file.RelPath, err)
 	}
 
 	header.Name = file.RelPath
@@ -68,12 +68,12 @@ func addFile(zipWriter *zip.Writer, file *File) error {
 
 	fileHeader, err := zipWriter.CreateHeader(header)
 	if err != nil {
-		return fmt.Errorf("could not create zip header %s to zip: %w", file.RelPath, err)
+		return fmt.Errorf("failed to create zip header for %s: %w", file.RelPath, err)
 	}
 
 	_, err = io.Copy(fileHeader, osFile)
 	if err != nil {
-		return fmt.Errorf("could not add file %s to zip: %w", file.RelPath, err)
+		return fmt.Errorf("failed to add file %s to zip: %w", file.RelPath, err)
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func addFS(w *zip.Writer, basePath string, fsys fs.FS) error {
 		return addFSEntry(w, basePath, fsys, name, d)
 	})
 	if err != nil {
-		return fmt.Errorf("could not add fs %s to zip: %w", basePath, err)
+		return fmt.Errorf("failed to add fs %s to zip: %w", basePath, err)
 	}
 	return nil
 }
@@ -99,15 +99,15 @@ func addFSEntry(w *zip.Writer, basePath string, fsys fs.FS, name string, d fs.Di
 
 	info, err := d.Info()
 	if err != nil {
-		return fmt.Errorf("could not get file info for %s: %w", name, err)
+		return fmt.Errorf("failed to get file info for %s: %w", name, err)
 	}
 	if !d.IsDir() && !info.Mode().IsRegular() {
-		return fmt.Errorf("cannot add non-regular file %s", name)
+		return fmt.Errorf("failed to add non-regular file %s", name)
 	}
 
 	header, err := zip.FileInfoHeader(info)
 	if err != nil {
-		return fmt.Errorf("could not create zip header for %s: %w", name, err)
+		return fmt.Errorf("failed to create zip header for %s: %w", name, err)
 	}
 	header.Name = zipPath
 	if d.IsDir() {
@@ -117,7 +117,7 @@ func addFSEntry(w *zip.Writer, basePath string, fsys fs.FS, name string, d fs.Di
 
 	entryWriter, err := w.CreateHeader(header)
 	if err != nil {
-		return fmt.Errorf("could not add %s to zip: %w", name, err)
+		return fmt.Errorf("failed to add %s to zip: %w", name, err)
 	}
 	if d.IsDir() {
 		return nil
@@ -139,13 +139,13 @@ func fsZipPath(basePath string, name string) string {
 func copyFSFile(fsys fs.FS, name string, dst io.Writer) error {
 	f, err := fsys.Open(name)
 	if err != nil {
-		return fmt.Errorf("could not open file %s to add to zip: %w", name, err)
+		return fmt.Errorf("failed to open file %s to add to zip: %w", name, err)
 	}
 	defer f.Close()
 
 	_, err = io.Copy(dst, f)
 	if err != nil {
-		return fmt.Errorf("could not write file %s to zip: %w", name, err)
+		return fmt.Errorf("failed to write file %s to zip: %w", name, err)
 	}
 	return nil
 }

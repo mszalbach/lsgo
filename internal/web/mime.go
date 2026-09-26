@@ -30,7 +30,7 @@ var safeInlineMediaTypes = map[string]bool{
 func isSafeInlineMediaType(rawMediaType string) (bool, error) {
 	rawMediaType, _, err := mime.ParseMediaType(rawMediaType)
 	if err != nil {
-		return false, fmt.Errorf("could not parse media type %s: %w", rawMediaType, err)
+		return false, fmt.Errorf("failed to parse media type %s: %w", rawMediaType, err)
 	}
 
 	return safeInlineMediaTypes[rawMediaType], nil
@@ -51,7 +51,7 @@ func detectMediaType(file *os.File) (string, error) {
 
 	_, err := file.Seek(0, io.SeekStart)
 	if err != nil {
-		return "application/octet-stream", fmt.Errorf("could not reset file reader for %s: %w", file.Name(), err)
+		return "application/octet-stream", fmt.Errorf("failed to reset file reader for %s: %w", file.Name(), err)
 	}
 
 	return http.DetectContentType(buffer[:n]), nil

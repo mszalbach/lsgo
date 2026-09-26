@@ -15,10 +15,10 @@ type Root struct {
 }
 
 // NewRoot creates a Root for working with a folder and its contents.
-func NewRoot(name string) (Root, error) {
-	root, err := os.OpenRoot(name)
+func NewRoot(rootPath string) (Root, error) {
+	root, err := os.OpenRoot(rootPath)
 	if err != nil {
-		return Root{}, fmt.Errorf("could not create Root %s: %w", name, err)
+		return Root{}, fmt.Errorf("failed to create root %s: %w", rootPath, err)
 	}
 
 	return Root{
@@ -37,12 +37,12 @@ type File struct {
 	ModTime time.Time
 }
 
-// AsOsFile is used when the underlying os.File is needed.
+// AsOSFile is used when the underlying os.File is needed.
 // Make sure to close it after use.
-func (f *File) AsOsFile() (*os.File, error) {
+func (f *File) AsOSFile() (*os.File, error) {
 	file, err := f.root.osRoot.Open(f.RelPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open file %s: %w", f.RelPath, err)
+		return nil, fmt.Errorf("failed to open file %s: %w", f.RelPath, err)
 	}
 	return file, nil
 }
@@ -52,7 +52,7 @@ func (f *File) AsOsFile() (*os.File, error) {
 func (f *File) AsFS() (fs.FS, error) {
 	subFS, err := fs.Sub(f.root.osRoot.FS(), f.RelPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not create sub fs for %s: %w", f.RelPath, err)
+		return nil, fmt.Errorf("failed to create sub fs for %s: %w", f.RelPath, err)
 	}
 
 	return subFS, nil
@@ -66,17 +66,17 @@ func (f *File) Children() ([]File, error) {
 
 	dir, err := f.root.File(f.RelPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open %s to get children: %w", f.RelPath, err)
+		return nil, fmt.Errorf("failed to open %s to get children: %w", f.RelPath, err)
 	}
-	osDir, err := dir.AsOsFile()
+	osDir, err := dir.AsOSFile()
 	if err != nil {
-		return nil, fmt.Errorf("could not use os file %s to get children: %w", f.RelPath, err)
+		return nil, fmt.Errorf("failed to use os file %s to get children: %w", f.RelPath, err)
 	}
 	defer osDir.Close()
 
 	dirEntries, err := osDir.ReadDir(-1)
 	if err != nil {
-		return nil, fmt.Errorf("could not read the folder %s: %w", f.RelPath, err)
+		return nil, fmt.Errorf("failed to read folder %s: %w", f.RelPath, err)
 	}
 
 	var children []File
@@ -101,15 +101,15 @@ func (f *File) Children() ([]File, error) {
 }
 
 // File returns a File from the current Root.
-func (r *Root) File(name string) (*File, error) {
-	rootFile, err := r.osRoot.Open(name)
+func (r *Root) File(filePath string) (*File, error) {
+	rootFile, err := r.osRoot.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("could not open file %s: %w", name, err)
+		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
 	}
 	defer rootFile.Close()
 	stat, err := rootFile.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("could not get stats for %s: %w", name, err)
+		return nil, fmt.Errorf("failed to get stats for %s: %w", filePath, err)
 	}
 
 	return &File{
@@ -118,7 +118,7 @@ func (r *Root) File(name string) (*File, error) {
 		Size:    stat.Size(),
 		ModTime: stat.ModTime(),
 		root:    r,
-		RelPath: name,
+		RelPath: filePath,
 	}, nil
 }
 
@@ -126,7 +126,7 @@ func (r *Root) File(name string) (*File, error) {
 func (r *Root) Close() error {
 	err := r.osRoot.Close()
 	if err != nil {
-		return fmt.Errorf("could not close root: %w", err)
+		return fmt.Errorf("failed to close root: %w", err)
 	}
 	return nil
 }
