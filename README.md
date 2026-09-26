@@ -31,6 +31,31 @@ cosign verify \
 
 Successful verification confirms the image signature was created by this repository's release workflow and has not been altered since signing.
 
+### Verify the SBOM attestation
+
+Release images also include a signed CycloneDX SBOM attestation. Verify it with:
+
+```bash
+cosign verify-attestation \
+  --type cyclonedx \
+  --certificate-identity-regexp "https://github.com/mszalbach/lsgo/.*" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  "ghcr.io/mszalbach/lsgo:VERSION"
+```
+
+To inspect the verified SBOM, decode the attestation payload:
+
+```bash
+cosign verify-attestation \
+  --type cyclonedx \
+  --certificate-identity-regexp "https://github.com/mszalbach/lsgo/.*" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  "ghcr.io/mszalbach/lsgo:VERSION" |
+  jq -r '.payload' | base64 --decode | jq "." | less
+```
+
+Successful verification confirms the attestation was signed by this repository's release workflow and is associated with the image digest.
+
 ## Usage
 
 > [!WARNING]
@@ -93,8 +118,7 @@ You can open a GitHub issue.
 * [x] configurable base path for proxy usage
 * [x] dark mode support
 * [x] download folder/files as zip
-* [x] Signed Docker image
-* [ ] SBOM attestation
+* [x] Signed Docker image + SBOM attestation
 * [ ] OIDC login
 
 ## Contributing

@@ -1,6 +1,6 @@
 [tools]
 air = "1.67.4"
-cosign = "latest"
+cosign = "3.1.3"
 go = "1.27.1"
 golangci-lint = "2.14.0"
 goreleaser = "2.18.2"
