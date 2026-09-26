@@ -209,3 +209,22 @@ Write ZIP archives directly to the HTTP response.
 - Clients can start downloading the archive before it is complete.
 - Errors after the response starts and client disconnections cannot be handled cleanly.
 - This decision may need to change if serving very large folders or improved error handling becomes more important.
+
+## 20260926-1 Use wide events for HTTP request logging
+
+accepted
+
+### Context
+
+Logging each step of an HTTP request separately can produce fragmented records that are difficult to correlate. Logging every successful request can also create unnecessary volume, while errors and failed requests should remain available for diagnosis.
+
+### Decision
+
+Collect structured log attributes in a request-scoped wide event and emit them together as one record when the request finishes.
+
+### Consequences
+
+- Related request and handler details are available together in a single structured record.
+- Logs do not provide a complete record of successful traffic when the sample rate is below 100%.
+- Request handlers must add useful diagnostic attributes to the wide event for them to appear in the completion record.
+- There should be no calls to `slog.Info`, `slog.Warn`, or `slog.Error` outside the `main` function.
