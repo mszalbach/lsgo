@@ -32,14 +32,6 @@ docker_signs:
   - cmd: cosign
     args: ['sign', '--yes', '${artifact}@${digest}']
     output: true
-  - id: syft
-    cmd: syft
-    args: ['${artifact}@${digest}', '--output', 'cyclonedx-json=dist/lsgo-image.sbom.json']
-    output: true
-  - id: attest
-    cmd: cosign
-    args: ['attest', '-yes', '--type', 'cyclonedx', '--predicate', 'dist/lsgo-image.sbom.json' , '${artifact}@${digest}']
-    output: true
 changelog:
   sort: asc
   use: github
