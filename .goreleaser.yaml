@@ -28,15 +28,16 @@ dockers_v2:
       - linux/arm64
     ids:
       - lsgo
-    hooks:
-      post:
-        - cmd: syft {{ index .Images 0 }}@{{ .Digest }} --output cyclonedx-json=dist/lsgo-image.sbom.json
-          output: true
-        - cmd: cosign attest --yes --type cyclonedx --predicate dist/lsgo-image.sbom.json {{ index .Images 0 }}@{{ .Digest }}
-          output: true
 docker_signs:
+  - cmd: syft
+    args: ['${artifact}@${digest}', '--output', 'cyclonedx-json=dist/lsgo-image.sbom.json']
+    output: true
+  - cmd: cosign
+    args: ['attest', '-yes', '--type', 'cyclonedx', '--predicate', 'dist/lsgo-image.sbom.json' , '${artifact}@${digest}']
+    output: true
   - cmd: cosign
     args: ['sign', '--yes', '${artifact}@${digest}']
+    output: true
 changelog:
   sort: asc
   use: github
