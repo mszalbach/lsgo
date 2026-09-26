@@ -44,7 +44,7 @@ func main() {
 		panic(err)
 	}
 
-	webServer := web.NewRouter(root, renderer, config.maxInlineFileSize)
+	webServer := web.NewRouter(root, renderer, config.maxInlineFileSize, config.logSampleRate)
 
 	server := http.Server{
 		Addr:              config.addr,

@@ -20,6 +20,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 				folder:            "./public",
 				baseURL:           "/",
 				maxInlineFileSize: 1_048_576,
+				logSampleRate:     0.05,
 			},
 		},
 		"config from cmd": {
@@ -32,12 +33,15 @@ func Test_should_parse_valid_config(t *testing.T) {
 				"/lsgo/",
 				"--max-inline-file-size",
 				"10000000",
+				"--log-sample-rate",
+				"1",
 			},
 			expectedConfig: Config{
 				addr:              ":8081",
 				folder:            "/tmp/share",
 				baseURL:           "/lsgo/",
 				maxInlineFileSize: 10000000,
+				logSampleRate:     1,
 			},
 		},
 		"adds missing slashes to base url": {
@@ -50,6 +54,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 				folder:            "./public",
 				baseURL:           "/lsgo/",
 				maxInlineFileSize: 1_048_576,
+				logSampleRate:     0.05,
 			},
 		},
 		"removes obsolete path segments from base url": {
@@ -62,6 +67,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 				folder:            "./public",
 				baseURL:           "/lsgo/",
 				maxInlineFileSize: 1_048_576,
+				logSampleRate:     0.05,
 			},
 		},
 	}

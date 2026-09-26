@@ -13,6 +13,7 @@ type Config struct {
 	folder            string
 	baseURL           string
 	maxInlineFileSize int64
+	logSampleRate     float64
 }
 
 func parseFlags(args []string, output io.Writer) (*Config, error) {
@@ -32,6 +33,12 @@ func parseFlags(args []string, output io.Writer) (*Config, error) {
 		"max-inline-file-size",
 		1_048_576,
 		"Maximum file size to display inline in bytes; larger files are download-only.",
+	)
+	fs.Float64Var(
+		&config.logSampleRate,
+		"log-sample-rate",
+		0.05,
+		"Sampling rate for successful, non-error logs (0.0 = 0%, 1.0 = 100%).",
 	)
 
 	err := fs.Parse(args)

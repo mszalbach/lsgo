@@ -20,14 +20,16 @@ type Router struct {
 	root              filesystem.Root
 	htmlRenderer      *HTMLRenderer
 	maxInlineFileSize int64
+	logSampleRate     float64
 }
 
 // NewRouter creates a Router.
-func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize int64) Router {
+func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize int64, logSampleRate float64) Router {
 	return Router{
 		root:              root,
 		htmlRenderer:      renderer,
 		maxInlineFileSize: maxInlineFileSize,
+		logSampleRate:     logSampleRate,
 	}
 }
 
@@ -37,8 +39,8 @@ func (s Router) Routes() http.Handler {
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)
 	mux.HandleFunc("GET /", rootHandler)
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
-	mux.HandleFunc("GET /files/{file...}", s.lsHandler)
-	mux.HandleFunc("POST /api/download/zip", s.downloadZipHandler)
+	mux.Handle("GET /files/{file...}", WideEventMiddleware(http.HandlerFunc(s.lsHandler), s.logSampleRate))
+	mux.Handle("POST /api/download/zip", WideEventMiddleware(http.HandlerFunc(s.downloadZipHandler), s.logSampleRate))
 
 	return owaspMiddleware(mux)
 }
@@ -57,12 +59,12 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := s.root.File(upath)
 	if err != nil {
-		s.handleOpenFileError(w, &filesystem.File{RelPath: upath}, err)
+		s.handleOpenFileError(w, r, &filesystem.File{RelPath: upath}, err)
 		return
 	}
 
 	if file.IsDir {
-		s.serveFolder(w, file)
+		s.serveFolder(w, r, file)
 		return
 	}
 
@@ -100,16 +102,18 @@ func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 	err = filesystem.WriteZipArchive(w, files...)
 	if err != nil {
 		// zip writes directly to w, so there is nothing which can be done when an error happens. See ADR-20260925-1.
-		slog.Error("Failed to write zip archive", slog.Any("files", files), slog.Any("error", err))
+		AddEventAttrs(r.Context(), slog.Any("files", files), slog.Any("error", err))
 		return
 	}
 }
 
-func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File, err error) {
+func (s Router) handleOpenFileError(w http.ResponseWriter, r *http.Request, file *filesystem.File, err error) {
+	AddEventAttrs(r.Context(), slog.Any("error", err))
 	breadcrumb := createBreadcrumb(file.RelPath)
 	var renderError error
 	switch {
 	case errors.Is(err, os.ErrNotExist):
+		AddEventAttrs(r.Context(), slog.String("error.kind", "not_exist"))
 		renderError = s.htmlRenderer.render(
 			w,
 			http.StatusNotFound,
@@ -118,6 +122,7 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File
 			"html/pages/notfound.tmpl",
 		)
 	case errors.Is(err, os.ErrPermission):
+		AddEventAttrs(r.Context(), slog.String("error.kind", "permission_denied"))
 		renderError = s.htmlRenderer.render(
 			w,
 			http.StatusForbidden,
@@ -126,21 +131,22 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, file *filesystem.File
 			"html/pages/denied.tmpl",
 		)
 	default:
-		s.httpError(w, file, err)
+		AddEventAttrs(r.Context(), slog.String("error.kind", "unknown"), slog.Any("render_error", err))
+		s.httpError(w, r, file, err)
 		return
 	}
 
 	if renderError != nil {
-		slog.Error("Failed to render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
+		AddEventAttrs(r.Context(), slog.String("file", file.RelPath), slog.Any("error", renderError))
 		return
 	}
 }
 
-func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
+func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
 	folderData, err := folderDataFrom(dir)
 	if err != nil {
-		s.httpError(w, dir, err)
+		s.httpError(w, r, dir, err)
 		return
 	}
 
@@ -152,7 +158,7 @@ func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
 		"html/pages/folder.tmpl",
 	)
 	if err != nil {
-		s.httpError(w, dir, err)
+		s.httpError(w, r, dir, err)
 		return
 	}
 }
@@ -160,21 +166,21 @@ func (s Router) serveFolder(w http.ResponseWriter, dir *filesystem.File) {
 func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	osFile, err := file.AsOSFile()
 	if err != nil {
-		s.httpError(w, file, err)
+		s.httpError(w, r, file, err)
 		return
 	}
 	defer osFile.Close()
 
 	mediaType, err := detectMediaType(osFile)
 	if err != nil {
-		s.httpError(w, file, err)
+		s.httpError(w, r, file, err)
 		return
 	}
 	w.Header().Set("Content-Type", mediaType)
 
 	isSafeMediaType, err := isSafeInlineMediaType(mediaType)
 	if err != nil {
-		s.httpError(w, file, err)
+		s.httpError(w, r, file, err)
 		return
 	}
 
@@ -190,7 +196,8 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Router) httpError(w http.ResponseWriter, file *filesystem.File, err error) {
+func (s Router) httpError(w http.ResponseWriter, r *http.Request, file *filesystem.File, err error) {
+	AddEventAttrs(r.Context(), slog.Any("error", err))
 	breadcrumb := createBreadcrumb(file.RelPath)
 	renderError := s.htmlRenderer.render(
 		w,
@@ -202,7 +209,7 @@ func (s Router) httpError(w http.ResponseWriter, file *filesystem.File, err erro
 
 	if renderError != nil {
 		// give up and use standard error handling
-		slog.Error("Failed to render error template", slog.String("file", file.RelPath), slog.Any("error", renderError))
+		AddEventAttrs(r.Context(), slog.Any("render_error", renderError))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
