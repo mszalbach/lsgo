@@ -99,6 +99,9 @@ func Test_browser_usage(t *testing.T) {
 			return names
 		}
 
+		// sometimes seems to be flaky
+		// expected: []string{"folder", "alpha.md", "hello.md", "zeta.md"}
+		// actual  : []string{"hello.md", "zeta.md", "folder", "alpha.md"}
 		ariaSort := nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "ascending", *ariaSort)
