@@ -184,8 +184,9 @@ func Test_browser_usage(t *testing.T) {
 			contents[file.Name] = string(content)
 		}
 		assert.Equal(t, map[string]string{
-			"alpha.md":        "Alpha file",
-			"javascript.html": "<!DOCTYPE html>\n<html>\n    <script>console.log(\"Hello\")</script>\n</html>",
+			"alpha.md":               "Alpha file",
+			"folder/":                "",
+			"folder/javascript.html": "<!DOCTYPE html>\n<html>\n    <script>console.log(\"Hello\")</script>\n</html>",
 		}, contents)
 	})
 }
