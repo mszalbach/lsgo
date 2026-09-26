@@ -1,9 +1,13 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -20,7 +24,7 @@ func TestMain(m *testing.M) {
 	err := os.MkdirAll("testdata/level1/level2/emptyDir", 0o750)
 	if err != nil {
 		//nolint:forbidigo // in TestMain there is no default logger
-		fmt.Println("Could not create required empty folder")
+		fmt.Println("Failed to create required empty folder")
 		os.Exit(1)
 	}
 	m.Run()
@@ -35,16 +39,10 @@ func createTestServerWithPath(t *testing.T, baseURL string) *httptest.Server {
 	t.Helper()
 	root, err := filesystem.NewRoot("testdata")
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		err := root.Close()
-		if err != nil {
-			t.Errorf("failed to clean up resource: %v", err)
-		}
-	})
+	t.Cleanup(func() { require.NoError(t, root.Close()) })
 	renderer, err := web.NewHTMLRenderer(baseURL, assets.Templates, "html/base.tmpl")
 	require.NoError(t, err)
-	webServer, err := web.NewRouter(root, renderer, 5)
-	require.NoError(t, err)
+	webServer := web.NewRouter(root, renderer, 5)
 
 	testServer := httptest.NewTestServer(t, webServer.Routes())
 	return testServer
@@ -87,6 +85,7 @@ func Test_should_list_files_in_folder(t *testing.T) {
 			expectedChildren: []child{
 				{name: "a.md", href: "files/a.md", isDir: false},
 				{name: "level1", href: "files/level1", isDir: true},
+				{name: "folderWithDuplicateFiles", href: "files/folderWithDuplicateFiles", isDir: true},
 			},
 		},
 		"trailing slash should behave like without trailing slash": {
@@ -94,6 +93,7 @@ func Test_should_list_files_in_folder(t *testing.T) {
 			expectedChildren: []child{
 				{name: "a.md", href: "files/a.md", isDir: false},
 				{name: "level1", href: "files/level1", isDir: true},
+				{name: "folderWithDuplicateFiles", href: "files/folderWithDuplicateFiles", isDir: true},
 			},
 		},
 		"level2": {
@@ -224,11 +224,6 @@ func Test_should_serve_files(t *testing.T) {
 			url:                  "http://localhost/files/a.md",
 			expectedMediaType:    "text/markdown; charset=utf-8",
 			expectedDownloadOnly: false,
-		},
-		"safe markdown with download requested": {
-			url:                  "http://localhost/files/a.md?download=1",
-			expectedMediaType:    "text/markdown; charset=utf-8",
-			expectedDownloadOnly: true,
 		},
 		"large markdown": {
 			url:                  "http://localhost/files/level1/large-file.md",
@@ -378,4 +373,144 @@ func Test_should_have_a_turn_back_link_for_empty_folders(t *testing.T) {
 	turnBackLink := doc.Find("a:contains('Turn back.')")
 	href, _ := turnBackLink.Attr("href")
 	assert.Equal(t, "files/level1/level2", href)
+}
+
+func Test_should_provide_downloads_as_zip(t *testing.T) {
+	testCases := map[string]struct {
+		paths             []string
+		expectedFileNames []string
+	}{
+		"single file": {
+			paths:             []string{"a.md"},
+			expectedFileNames: []string{"a.md"},
+		},
+		"folder": {
+			paths: []string{"level1"},
+			expectedFileNames: []string{
+				"level1/",
+				"level1/large-file.md",
+				"level1/level2/",
+				"level1/level2/emptyDir/",
+				"level1/specialFiles/",
+				"level1/specialFiles/<a href=\"google.com\">Link file",
+				"level1/specialFiles/folder#fragment/",
+				"level1/specialFiles/folder#fragment/.gitkeep",
+				"level1/specialFiles/folder?query=2/",
+				"level1/specialFiles/folder?query=2/.gitkeep",
+				"level1/specialFiles/html-without-extension",
+				"level1/specialFiles/javascript.html",
+			},
+		},
+		"multiple files selected": {
+			paths: []string{"a.md", "level1/specialFiles/javascript.html"},
+			expectedFileNames: []string{
+				"a.md",
+				"level1/specialFiles/javascript.html",
+			},
+		},
+		"folder and file selected": {
+			paths: []string{"a.md", "level1/specialFiles/folder#fragment"},
+			expectedFileNames: []string{
+				"a.md",
+				"level1/specialFiles/folder#fragment/",
+				"level1/specialFiles/folder#fragment/.gitkeep",
+			},
+		},
+		"two files with same name selected": {
+			paths: []string{
+				"a.md",
+				"folderWithDuplicateFiles/a.md",
+				"folderWithDuplicateFiles/folder/a.md",
+			},
+			expectedFileNames: []string{
+				"a.md",
+				"folderWithDuplicateFiles/a.md",
+				"folderWithDuplicateFiles/folder/a.md",
+			},
+		},
+		"two folder with same file name in it selected": {
+			paths: []string{"a.md", "folderWithDuplicateFiles", "folderWithDuplicateFiles/folder"},
+			// TODO thats wrong and a.md is overwritten
+			expectedFileNames: []string{
+				"a.md",
+				"folderWithDuplicateFiles/",
+				"folderWithDuplicateFiles/a.md",
+				"folderWithDuplicateFiles/folder/",
+				"folderWithDuplicateFiles/folder/a.md",
+				// the same file is added twice with the same complete name. Edge case should not happen in lsgo itself
+				"folderWithDuplicateFiles/folder/",
+				"folderWithDuplicateFiles/folder/a.md",
+			},
+		},
+	}
+	// Given
+	server := createTestServer(t)
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// When
+
+			res, err := server.Client().PostForm("http://localhost/api/download/zip", url.Values{
+				"paths": tc.paths,
+			})
+			require.NoError(t, err)
+
+			// Then
+			assert.Equal(t, http.StatusOK, res.StatusCode)
+
+			zipBytes, err := io.ReadAll(res.Body)
+			require.NoError(t, err)
+
+			bytesReader := bytes.NewReader(zipBytes)
+			zipReader, err := zip.NewReader(bytesReader, int64(len(zipBytes)))
+			require.NoError(t, err)
+
+			var actualFileNames []string
+			for _, f := range zipReader.File {
+				t.Log(f.Name)
+				actualFileNames = append(actualFileNames, f.Name)
+			}
+
+			assert.ElementsMatch(t, actualFileNames, tc.expectedFileNames)
+		})
+	}
+}
+
+func Test_should_fail_for_non_valid_zip_requests(t *testing.T) {
+	testCases := map[string]struct {
+		baseURL string
+		paths   []string
+	}{
+		"non existing path": {
+			paths: []string{"DOES-NOT-EXIST.md"},
+		},
+		"valid + non existing path": {
+			paths: []string{"a.md", "DOES-NOT-EXIST.md"},
+		},
+		"path traversal": {
+			paths: []string{"../lsgo_test.go"},
+		},
+		"absolute file linux": {
+			paths: []string{"/tmp"},
+		},
+		"absolute file windows": {
+			paths: []string{"C:\\Users\\Public"},
+		},
+	}
+	// Given
+	server := createTestServer(t)
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			// When
+
+			res, err := server.Client().PostForm("http://localhost/api/download/zip", url.Values{
+				"paths": tc.paths,
+			})
+			require.NoError(t, err)
+
+			// Then
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		})
+	}
 }

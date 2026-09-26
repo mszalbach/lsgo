@@ -33,22 +33,18 @@ func main() {
 
 	root, err := filesystem.NewRoot(config.folder)
 	if err != nil {
-		slog.Error("Could not open root folder", slog.String("folder", config.folder), slog.Any("error", err))
+		slog.Error("Failed to open root folder", slog.String("folder", config.folder), slog.Any("error", err))
 		os.Exit(1)
 	}
 	defer root.Close()
 
 	renderer, err := web.NewHTMLRenderer(config.baseURL, assets.Templates, "html/base.tmpl")
 	if err != nil {
-		slog.Error("Could not create handler for web server", slog.Any("error", err))
+		slog.Error("Failed to create handler for web server", slog.Any("error", err))
 		panic(err)
 	}
 
-	webServer, err := web.NewRouter(root, renderer, config.maxInlineFileSize)
-	if err != nil {
-		slog.Error("Could not create handler for web server", slog.Any("error", err))
-		panic(err)
-	}
+	webServer := web.NewRouter(root, renderer, config.maxInlineFileSize)
 
 	server := http.Server{
 		Addr:              config.addr,
@@ -77,6 +73,6 @@ func main() {
 
 	stopErr := server.Shutdown(timeoutCtx)
 	if stopErr != nil {
-		slog.Warn("server stop failed", slog.Any("error", stopErr))
+		slog.Warn("Failed to stop server", slog.Any("error", stopErr))
 	}
 }

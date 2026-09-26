@@ -2,7 +2,7 @@
     font-size: 2rem;
     font-weight: 700;
     line-height: 1.2;
-    margin: 50px 0px;
+    margin: 3.125rem 0;
 }
 
 .breadcrumb ol {
@@ -31,13 +31,25 @@ th[data-sort-key][aria-sort="descending"]::after {
     content: " ↓";
 }
 
+.selection-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.selection-bar[aria-hidden="true"] {
+    visibility: hidden;
+}
+
+.selection-bar form {
+    margin: 0;
+}
+
 .icon-link {
-    /* Aligns icon and text horizontally side-by-side */
     display: inline-flex;
     align-items: center;
-
-    /* Adds spacing between icon and text */
-    gap: 8px;
+    gap: 0.5rem;
 }
 
 .icon-link .icon {

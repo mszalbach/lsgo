@@ -36,7 +36,7 @@ func parseFlags(args []string, output io.Writer) (*Config, error) {
 
 	err := fs.Parse(args)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse config %w", err)
+		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 	config.normalizeBaseURL()
 

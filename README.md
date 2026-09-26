@@ -90,6 +90,10 @@ Contributions are welcome. Please open an issue to discuss a larger change befor
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit and pull request conventions, as well as the release process.
 
+## Documentation
+
+See the [architecture documentation](./docs/README.md), including the project's architecture decisions and ADRs.
+
 ## Development
 
 You need Go 1.27 installed.

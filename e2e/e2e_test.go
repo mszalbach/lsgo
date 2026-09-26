@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"archive/zip"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -100,7 +102,7 @@ func Test_browser_usage(t *testing.T) {
 		ariaSort := nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "ascending", *ariaSort)
-		assert.ElementsMatch(t, fileNames(), []string{"folder", "alpha.md", "hello.md", "zeta.md"})
+		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
 
 		nameHeader.MustClick()
 		ariaSort = nameHeader.MustAttribute("aria-sort")
@@ -121,22 +123,6 @@ func Test_browser_usage(t *testing.T) {
 		t.Cleanup(page.MustClose)
 
 		assert.Contains(t, page.MustElement("body").MustText(), "Top file")
-	})
-
-	t.Run("File can be downloaded with the download button", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage(baseURL)
-		t.Cleanup(page.MustClose)
-
-		downloadDir := t.TempDir()
-		waitForDownload := page.Browser().WaitDownload(downloadDir)
-		page.MustElement("a[aria-label='Download hello.md']").MustClick()
-		download := waitForDownload()
-		require.Equal(t, "hello.md", download.SuggestedFilename)
-
-		downloaded, err := os.ReadFile(filepath.Join(downloadDir, download.GUID))
-		require.NoError(t, err)
-		assert.Equal(t, "Top file", string(downloaded))
 	})
 
 	t.Run("Unsafe html file is provided as download", func(t *testing.T) {
@@ -169,5 +155,38 @@ func Test_browser_usage(t *testing.T) {
 
 		turnBackLink := page.MustElement("section a[href='files/folder']")
 		assert.Equal(t, "Turn back.", turnBackLink.MustText())
+	})
+
+	t.Run("Selected files and folders can be downloaded", func(t *testing.T) {
+		incognito := browser.MustIncognito()
+		page := incognito.MustPage(baseURL)
+		t.Cleanup(page.MustClose)
+
+		downloadDir := t.TempDir()
+		waitForDownload := page.Browser().WaitDownload(downloadDir)
+		page.MustElement("input[name='paths'][value='alpha.md']").MustClick()
+		page.MustElement("input[name='paths'][value='folder']").MustClick()
+		page.MustElement("form button[type='submit']").MustClick()
+		download := waitForDownload()
+		assert.Contains(t, download.SuggestedFilename, ".zip")
+
+		archive, err := zip.OpenReader(filepath.Join(downloadDir, download.GUID))
+		require.NoError(t, err)
+		t.Cleanup(func() { require.NoError(t, archive.Close()) })
+
+		contents := make(map[string]string, len(archive.File))
+		for _, file := range archive.File {
+			reader, err := file.Open()
+			require.NoError(t, err)
+			content, err := io.ReadAll(reader)
+			require.NoError(t, err)
+			require.NoError(t, reader.Close())
+			contents[file.Name] = string(content)
+		}
+		assert.Equal(t, map[string]string{
+			"alpha.md":               "Alpha file",
+			"folder/":                "",
+			"folder/javascript.html": "<!DOCTYPE html>\n<html>\n    <script>console.log(\"Hello\")</script>\n</html>",
+		}, contents)
 	})
 }

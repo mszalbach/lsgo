@@ -95,12 +95,12 @@ func Test_should_inform_about_parse_errors(t *testing.T) {
 		"max-inline-file-size not a number": {
 			args:           []string{"--max-inline-file-size", "aa"},
 			expectedOutput: "invalid value \"aa\" for flag -max-inline-file-size: parse error",
-			expectedError:  "could not parse config invalid value \"aa\" for flag -max-inline-file-size",
+			expectedError:  "failed to parse config: invalid value \"aa\" for flag -max-inline-file-size",
 		},
 		"empty argument": {
 			args:           []string{"--base-url"},
 			expectedOutput: "flag needs an argument: -base-url",
-			expectedError:  "could not parse config flag needs an argument: -base-url",
+			expectedError:  "failed to parse config: flag needs an argument: -base-url",
 		},
 	}
 
