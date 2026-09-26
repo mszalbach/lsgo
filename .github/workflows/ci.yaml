@@ -91,9 +91,31 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run GoReleaser
+        id: goreleaser
         uses: goreleaser/goreleaser-action@v7.2.3
         with:
           version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate and attest image SBOMs
+        env:
+          ARTIFACTS: ${{ steps.goreleaser.outputs.artifacts }}
+        run: |
+          jq -r '.[] | select(.type == "Docker Image") | [.path, .extra.Digest] | @tsv' <<< "$ARTIFACTS" | \
+          while IFS=$'\t' read -r image digest; do
+            [ -z "$image" ] && continue
+
+            repository="${image%:*}"
+            filename="${image//[\/:]/_}"
+
+            # Generate SBOM
+            syft "registry:$image" -o "cyclonedx-json=dist/${filename}.sbom.json"
+
+            # Attest SBOM
+            cosign attest --yes \
+              --type cyclonedx \
+              --predicate "dist/${filename}.sbom.json" \
+              "${repository}@${digest}"
+          done
