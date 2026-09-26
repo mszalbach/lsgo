@@ -80,7 +80,7 @@ You can open a GitHub issue.
   * Docker container
 * [x] configurable base path for proxy usage
 * [x] dark mode support
-* [ ] download folder/files as zip
+* [x] download folder/files as zip
 * [ ] Signed Docker image and SBOM attestations
 * [ ] OIDC login
 
