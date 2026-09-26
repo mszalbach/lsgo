@@ -30,7 +30,7 @@ var safeInlineMediaTypes = map[string]bool{
 func isSafeInlineMediaType(rawMediaType string) (bool, error) {
 	rawMediaType, _, err := mime.ParseMediaType(rawMediaType)
 	if err != nil {
-		return false, fmt.Errorf("could not parse media type %s %w", rawMediaType, err)
+		return false, fmt.Errorf("could not parse media type %s: %w", rawMediaType, err)
 	}
 
 	return safeInlineMediaTypes[rawMediaType], nil
