@@ -15,6 +15,19 @@ The easiest way to run LSGo is with the provided Docker image. Replace `VERSION`
 docker pull ghcr.io/mszalbach/lsgo:VERSION
 ```
 
+### Verify the Docker image
+
+Release images are signed with Cosign using GitHub Actions keyless signing:
+
+```bash
+cosign verify \
+  --certificate-identity-regexp "https://github.com/mszalbach/lsgo/.*" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  "ghcr.io/mszalbach/lsgo:VERSION"
+```
+
+Successful verification confirms the image signature was created by this repository's release workflow and has not been altered since signing.
+
 You can also download a binary from the [GitHub Releases](https://github.com/mszalbach/lsgo/releases) page and run it directly on your machine.
 
 Before running LSGo, read the Usage section. Make sure the server is not reachable by untrusted users and that the folders you serve do not contain sensitive files.
@@ -81,7 +94,8 @@ You can open a GitHub issue.
 * [x] configurable base path for proxy usage
 * [x] dark mode support
 * [x] download folder/files as zip
-* [ ] Signed Docker image and SBOM attestations
+* [x] Signed Docker image
+* [ ] SBOM attestation
 * [ ] OIDC login
 
 ## Contributing
