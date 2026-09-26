@@ -18,7 +18,7 @@ test: ## Run the tests.
 
 .PHONY: e2e
 e2e: build ## Run the e2e tests.
-	@cd e2e && go test ./...
+	@cd e2e && go test ./... --count=1
 
 .PHONY: lint
 lint: ## Run the linter.
