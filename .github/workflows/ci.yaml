@@ -63,7 +63,7 @@ jobs:
       id-token: write # needed for signing the images with GitHub OIDC Token
     runs-on: ubuntu-latest
     steps:
-      - name: heckout repository
+      - name: Checkout repository
         uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # needed for goreleaser to correctly create changelog

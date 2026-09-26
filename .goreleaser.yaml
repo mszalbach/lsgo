@@ -31,7 +31,6 @@ dockers_v2:
 docker_signs:
   - cmd: cosign
     args: ['sign', '--yes', '${artifact}@${digest}']
-    artifacts: manifests
 changelog:
   sort: asc
   use: github
