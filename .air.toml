@@ -6,7 +6,7 @@ testdata_dir = "testdata"
 tmp_dir = "dist"
 
 [build]
-  args_bin = []
+  args_bin = ["--folder", "e2e/testdata"]
   bin = "./dist/main"
   cmd = "go build -o ./dist/main ./cmd/lsgo/"
   delay = 1000

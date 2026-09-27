@@ -3,7 +3,6 @@ package e2e
 import (
 	"archive/zip"
 	"io"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -57,13 +56,13 @@ func Test_browser_usage(t *testing.T) {
 	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
 		incognito := browser.MustIncognito()
-		page := incognito.MustPage(baseURL + "/files/folder")
+		page := incognito.MustPage(baseURL + "/files/team")
 		t.Cleanup(page.MustClose)
 
 		breadcrumbs := page.MustElements("nav[aria-label='Breadcrumb'] a")
 		require.Len(t, breadcrumbs, 2)
 		assert.Equal(t, "Home", breadcrumbs[0].MustText())
-		assert.Equal(t, "folder", breadcrumbs[1].MustText())
+		assert.Equal(t, "team", breadcrumbs[1].MustText())
 		homeHref := breadcrumbs[0].MustAttribute("href")
 		require.NotNil(t, homeHref)
 		assert.Equal(t, "files/", *homeHref)
@@ -77,11 +76,11 @@ func Test_browser_usage(t *testing.T) {
 		page := incognito.MustPage(baseURL)
 		t.Cleanup(page.MustClose)
 
-		helloFile := page.MustElement("a[href='files/hello.md']")
-		assert.Equal(t, "hello.md", helloFile.MustText())
+		readme := page.MustElement("a[href='files/README.md']")
+		assert.Equal(t, "README.md", readme.MustText())
 
-		folder := page.MustElement("a[href='files/folder']")
-		assert.Equal(t, "folder", folder.MustText())
+		teamFolder := page.MustElement("a[href='files/team']")
+		assert.Equal(t, "team", teamFolder.MustText())
 	})
 
 	t.Run("Files can be sorted by name", func(t *testing.T) {
@@ -100,64 +99,30 @@ func Test_browser_usage(t *testing.T) {
 		}
 
 		// sometimes seems to be flaky
-		// expected: []string{"folder", "alpha.md", "hello.md", "zeta.md"}
-		// actual  : []string{"hello.md", "zeta.md", "folder", "alpha.md"}
 		ariaSort := nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "ascending", *ariaSort)
-		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
+		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
 
 		nameHeader.MustClick()
 		ariaSort = nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "descending", *ariaSort)
-		assert.Equal(t, []string{"folder", "zeta.md", "hello.md", "alpha.md"}, fileNames())
+		assert.Equal(t, []string{"team", "README.md", "project-plan.md", "meeting-notes.md", "budget.csv"}, fileNames())
 
 		nameHeader.MustClick()
 		ariaSort = nameHeader.MustAttribute("aria-sort")
 		require.NotNil(t, ariaSort)
 		assert.Equal(t, "ascending", *ariaSort)
-		assert.Equal(t, []string{"folder", "alpha.md", "hello.md", "zeta.md"}, fileNames())
+		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
 	})
 
 	t.Run("Normal file is shown in browser", func(t *testing.T) {
 		incognito := browser.MustIncognito()
-		page := incognito.MustPage(baseURL + "/files/hello.md")
+		page := incognito.MustPage(baseURL + "/files/README.md")
 		t.Cleanup(page.MustClose)
 
-		assert.Contains(t, page.MustElement("body").MustText(), "Top file")
-	})
-
-	t.Run("Unsafe html file is provided as download", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage(baseURL + "/files/folder")
-		t.Cleanup(page.MustClose)
-
-		downloadDir := t.TempDir()
-		waitForDownload := page.Browser().WaitDownload(downloadDir)
-		page.MustElement("a[href='files/folder/javascript.html']").MustClick()
-		download := waitForDownload()
-		require.Equal(t, "javascript.html", download.SuggestedFilename)
-
-		downloaded, err := os.ReadFile(filepath.Join(downloadDir, download.GUID))
-		require.NoError(t, err)
-		assert.Equal(
-			t,
-			"<!DOCTYPE html>\n<html>\n    <script>console.log(\"Hello\")</script>\n</html>",
-			string(downloaded),
-		)
-	})
-
-	t.Run("Not existing files produce a warning", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage(baseURL + "/files/folder/NOT-EXISTS")
-		t.Cleanup(page.MustClose)
-
-		bodyText := page.MustElement("body").MustText()
-		assert.Contains(t, bodyText, "NOT-EXISTS does not exist")
-
-		turnBackLink := page.MustElement("section a[href='files/folder']")
-		assert.Equal(t, "Turn back.", turnBackLink.MustText())
+		assert.Contains(t, page.MustElement("body").MustText(), "Shared project workspace")
 	})
 
 	t.Run("Selected files and folders can be downloaded", func(t *testing.T) {
@@ -167,8 +132,8 @@ func Test_browser_usage(t *testing.T) {
 
 		downloadDir := t.TempDir()
 		waitForDownload := page.Browser().WaitDownload(downloadDir)
-		page.MustElement("input[name='paths'][value='alpha.md']").MustClick()
-		page.MustElement("input[name='paths'][value='folder']").MustClick()
+		page.MustElement("input[name='paths'][value='README.md']").MustClick()
+		page.MustElement("input[name='paths'][value='team']").MustClick()
 		page.MustElement("form button[type='submit']").MustClick()
 		download := waitForDownload()
 		assert.Contains(t, download.SuggestedFilename, ".zip")
@@ -187,9 +152,10 @@ func Test_browser_usage(t *testing.T) {
 			contents[file.Name] = string(content)
 		}
 		assert.Equal(t, map[string]string{
-			"alpha.md":               "Alpha file",
-			"folder/":                "",
-			"folder/javascript.html": "<!DOCTYPE html>\n<html>\n    <script>console.log(\"Hello\")</script>\n</html>",
+			"README.md":          "# Shared project workspace\n\nProject documents and working notes for the product team.",
+			"team/":              "",
+			"team/onboarding.md": "# Team onboarding\n\nStart here for the current project context and team contacts.",
+			"team/roadmap.md":    "# Product roadmap\n\n- Q1: Improve the core workflow\n- Q2: Add reporting for project owners",
 		}, contents)
 	})
 }

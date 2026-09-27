@@ -156,6 +156,7 @@ TL;DR:
 ```bash
 make check # fmt, lint, test
 air
+make e2e
 ```
 
 ## License
