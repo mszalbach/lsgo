@@ -68,7 +68,7 @@ func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
 	}
 	data := make([]fileData, len(children))
 	for i, child := range children {
-		data[i] = fileDataFrom(&child)
+		data[i] = fileDataFrom(child)
 	}
 
 	return data, nil

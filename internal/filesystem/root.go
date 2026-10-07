@@ -59,16 +59,12 @@ func (f *File) asFS() (fs.FS, error) {
 }
 
 // Children returns the children of the current File. It returns nil if the File is not a directory.
-func (f *File) Children() ([]File, error) {
+func (f *File) Children() ([]*File, error) {
 	if !f.IsDir {
 		return nil, nil
 	}
 
-	dir, err := f.root.File(f.RelPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open %s to get children: %w", f.RelPath, err)
-	}
-	osDir, err := dir.AsOSFile()
+	osDir, err := f.AsOSFile()
 	if err != nil {
 		return nil, fmt.Errorf("failed to use os file %s to get children: %w", f.RelPath, err)
 	}
@@ -79,22 +75,14 @@ func (f *File) Children() ([]File, error) {
 		return nil, fmt.Errorf("failed to read folder %s: %w", f.RelPath, err)
 	}
 
-	var children []File
+	var children []*File
 	for _, entry := range dirEntries {
 		// Entries stats would not follow symlinks and the isDir property would be wrong so correctly open the child
 		file, err := f.root.File(path.Join(f.RelPath, entry.Name()))
 		if err != nil {
 			continue
 		}
-
-		children = append(children, File{
-			root:    f.root,
-			RelPath: file.RelPath,
-			Name:    file.Name,
-			IsDir:   file.IsDir,
-			Size:    file.Size,
-			ModTime: file.ModTime,
-		})
+		children = append(children, file)
 	}
 
 	return children, nil
@@ -102,12 +90,7 @@ func (f *File) Children() ([]File, error) {
 
 // File returns a File from the current Root.
 func (r *Root) File(filePath string) (*File, error) {
-	rootFile, err := r.osRoot.Open(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file %s: %w", filePath, err)
-	}
-	defer rootFile.Close()
-	stat, err := rootFile.Stat()
+	stat, err := r.osRoot.Stat(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stats for %s: %w", filePath, err)
 	}
