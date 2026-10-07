@@ -53,7 +53,7 @@ func (rw *responseWriterWrapper) WriteHeader(code int) {
 func (rw *responseWriterWrapper) Write(b []byte) (int, error) {
 	n, err := rw.ResponseWriter.Write(b)
 	if err != nil {
-		return -1, fmt.Errorf("failed to write response writer for wide log: %w", err)
+		return n, fmt.Errorf("failed to write response writer for wide log: %w", err)
 	}
 	rw.bytesWritten += n
 	return n, nil
