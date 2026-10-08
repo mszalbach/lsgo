@@ -28,12 +28,11 @@ var safeInlineMediaTypes = map[string]bool{
 }
 
 func isSafeInlineMediaType(rawMediaType string) (bool, error) {
-	rawMediaType, _, err := mime.ParseMediaType(rawMediaType)
+	parsedMediaType, _, err := mime.ParseMediaType(rawMediaType)
 	if err != nil {
-		return false, fmt.Errorf("failed to parse media type %s: %w", rawMediaType, err)
+		return false, fmt.Errorf("failed to parse media type %s: %w", parsedMediaType, err)
 	}
-
-	return safeInlineMediaTypes[rawMediaType], nil
+	return safeInlineMediaTypes[parsedMediaType], nil
 }
 
 // detectMediaType finds out which mime type a file is.
