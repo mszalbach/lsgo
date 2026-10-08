@@ -53,8 +53,8 @@ func parseFlags(args []string, output io.Writer) (*config, error) {
 func (c *config) normalizeBaseURL() {
 	cleaned := path.Clean(c.baseURL)
 	if cleaned == "." || cleaned == "/" {
-		c.baseURL = "/"
+		c.baseURL = ""
 		return
 	}
-	c.baseURL = "/" + strings.Trim(cleaned, "/") + "/"
+	c.baseURL = "/" + strings.Trim(cleaned, "/")
 }

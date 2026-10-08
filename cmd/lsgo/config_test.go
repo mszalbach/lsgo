@@ -18,7 +18,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 			expectedConfig: config{
 				addr:              "localhost:8080",
 				folder:            "./public",
-				baseURL:           "/",
+				baseURL:           "",
 				maxInlineFileSize: 1_048_576,
 				logSampleRate:     0.05,
 			},
@@ -39,7 +39,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 			expectedConfig: config{
 				addr:              ":8081",
 				folder:            "/tmp/share",
-				baseURL:           "/lsgo/",
+				baseURL:           "/lsgo",
 				maxInlineFileSize: 10000000,
 				logSampleRate:     1,
 			},
@@ -52,7 +52,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 			expectedConfig: config{
 				addr:              "localhost:8080",
 				folder:            "./public",
-				baseURL:           "/lsgo/",
+				baseURL:           "/lsgo",
 				maxInlineFileSize: 1_048_576,
 				logSampleRate:     0.05,
 			},
@@ -65,7 +65,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 			expectedConfig: config{
 				addr:              "localhost:8080",
 				folder:            "./public",
-				baseURL:           "/lsgo/",
+				baseURL:           "/lsgo",
 				maxInlineFileSize: 1_048_576,
 				logSampleRate:     0.05,
 			},

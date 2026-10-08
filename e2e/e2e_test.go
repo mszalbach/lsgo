@@ -65,7 +65,7 @@ func Test_browser_usage(t *testing.T) {
 		assert.Equal(t, "team", breadcrumbs[1].MustText())
 		homeHref := breadcrumbs[0].MustAttribute("href")
 		require.NotNil(t, homeHref)
-		assert.Equal(t, "files/", *homeHref)
+		assert.Equal(t, "/files/", *homeHref)
 		breadcrumbs[0].MustClick()
 		page.MustWaitLoad()
 		require.Len(t, page.MustElements("nav[aria-label='Breadcrumb'] a"), 1)
@@ -76,10 +76,10 @@ func Test_browser_usage(t *testing.T) {
 		page := incognito.MustPage(baseURL)
 		t.Cleanup(page.MustClose)
 
-		readme := page.MustElement("a[href='files/README.md']")
+		readme := page.MustElement("a[href='/files/README.md']")
 		assert.Equal(t, "README.md", readme.MustText())
 
-		teamFolder := page.MustElement("a[href='files/team']")
+		teamFolder := page.MustElement("a[href='/files/team']")
 		assert.Equal(t, "team", teamFolder.MustText())
 	})
 

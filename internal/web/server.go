@@ -17,17 +17,25 @@ import (
 
 // Router provides everything needed to serve the LSGo webpage.
 type Router struct {
-	root              filesystem.Root
+	baseURL           string
 	htmlRenderer      *HTMLRenderer
+	root              filesystem.Root
 	maxInlineFileSize int64
 	logSampleRate     float64
 }
 
 // NewRouter creates a Router.
-func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize int64, logSampleRate float64) Router {
+func NewRouter(
+	baseURL string,
+	renderer *HTMLRenderer,
+	root filesystem.Root,
+	maxInlineFileSize int64,
+	logSampleRate float64,
+) Router {
 	return Router{
-		root:              root,
+		baseURL:           baseURL,
 		htmlRenderer:      renderer,
+		root:              root,
 		maxInlineFileSize: maxInlineFileSize,
 		logSampleRate:     logSampleRate,
 	}
@@ -37,7 +45,7 @@ func NewRouter(root filesystem.Root, renderer *HTMLRenderer, maxInlineFileSize i
 func (s Router) Routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /favicon.ico", faviconHandler)
-	mux.HandleFunc("GET /", rootHandler)
+	mux.HandleFunc("GET /", s.rootHandler)
 	mux.Handle("GET /static/", http.FileServerFS(assets.Static))
 	mux.Handle("GET /files/{file...}", WideEventMiddleware(http.HandlerFunc(s.lsHandler), s.logSampleRate))
 	mux.Handle("POST /api/download/zip", WideEventMiddleware(http.HandlerFunc(s.downloadZipHandler), s.logSampleRate))
@@ -45,8 +53,8 @@ func (s Router) Routes() http.Handler {
 	return owaspMiddleware(mux)
 }
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/files", http.StatusMovedPermanently)
+func (s Router) rootHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, s.baseURL+"/files/", http.StatusFound)
 }
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
