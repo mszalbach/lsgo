@@ -11,11 +11,11 @@ import (
 func Test_should_parse_valid_config(t *testing.T) {
 	testCases := map[string]struct {
 		args           []string
-		expectedConfig Config
+		expectedConfig config
 	}{
 		"default config": {
 			args: []string{},
-			expectedConfig: Config{
+			expectedConfig: config{
 				addr:              "localhost:8080",
 				folder:            "./public",
 				baseURL:           "/",
@@ -36,7 +36,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 				"--log-sample-rate",
 				"1",
 			},
-			expectedConfig: Config{
+			expectedConfig: config{
 				addr:              ":8081",
 				folder:            "/tmp/share",
 				baseURL:           "/lsgo/",
@@ -49,7 +49,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 				"--base-url",
 				"lsgo",
 			},
-			expectedConfig: Config{
+			expectedConfig: config{
 				addr:              "localhost:8080",
 				folder:            "./public",
 				baseURL:           "/lsgo/",
@@ -62,7 +62,7 @@ func Test_should_parse_valid_config(t *testing.T) {
 				"--base-url",
 				".//lsgo////",
 			},
-			expectedConfig: Config{
+			expectedConfig: config{
 				addr:              "localhost:8080",
 				folder:            "./public",
 				baseURL:           "/lsgo/",

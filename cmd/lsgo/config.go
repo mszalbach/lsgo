@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type Config struct {
+type config struct {
 	addr              string
 	folder            string
 	baseURL           string
@@ -16,10 +16,10 @@ type Config struct {
 	logSampleRate     float64
 }
 
-func parseFlags(args []string, output io.Writer) (*Config, error) {
+func parseFlags(args []string, output io.Writer) (*config, error) {
 	fs := flag.NewFlagSet("lsgo", flag.ContinueOnError)
 	fs.SetOutput(output)
-	var config Config
+	var config config
 	fs.StringVar(&config.addr, "addr", "localhost:8080", "Address to listen on. Default only listens on localhost.")
 	fs.StringVar(&config.folder, "folder", "./public", "Folder to serve.")
 	fs.StringVar(
@@ -50,7 +50,7 @@ func parseFlags(args []string, output io.Writer) (*Config, error) {
 	return &config, nil
 }
 
-func (c *Config) normalizeBaseURL() {
+func (c *config) normalizeBaseURL() {
 	cleaned := path.Clean(c.baseURL)
 	if cleaned == "." || cleaned == "/" {
 		c.baseURL = "/"
