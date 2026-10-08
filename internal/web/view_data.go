@@ -10,7 +10,7 @@ import (
 	"github.com/mszalbach/lsgo/internal/filesystem"
 )
 
-// data the overal struct given to all templates.
+// data contains the overall data structure passed to all templates.
 type data struct {
 	BaseURL    string
 	Breadcrumb []breadcrumb
@@ -32,13 +32,18 @@ type breadcrumb struct {
 	RelPath relPath
 }
 
-// relPath ensures that paths are properly escaped while preserving path separators.
+// relPath wraps a relative path string and provides methods for using it in URLs.
 type relPath struct {
 	path string
 }
 
-// String returns the encoded path while preserving the "/" separators.
+// String returns the unescaped path.
 func (p relPath) String() string {
+	return p.path
+}
+
+// URLPath returns the path with each segment escaped for use in URLs, preserving path separators.
+func (p relPath) URLPath() string {
 	parts := strings.Split(p.path, "/")
 	var escapedURL []string
 

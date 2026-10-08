@@ -8,7 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"time"
 
 	"github.com/mszalbach/lsgo/internal/assets"
@@ -55,7 +55,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 	upath := "./" + r.PathValue("file")
-	upath = filepath.Clean(upath)
+	upath = path.Clean(upath)
 
 	file, err := s.root.File(upath)
 	if err != nil {

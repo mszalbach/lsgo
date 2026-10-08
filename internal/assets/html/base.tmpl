@@ -16,7 +16,7 @@
     <nav aria-label="Breadcrumb" class="breadcrumb">
         <ol>
             {{range .Breadcrumb}}
-            <li><a href="files/{{.RelPath}}">{{.Name}}</a></li>
+            <li><a href="files/{{.RelPath.URLPath}}">{{.Name}}</a></li>
             {{end}}
         </ol>
     </nav>
