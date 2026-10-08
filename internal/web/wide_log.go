@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"math/rand/v2"
 	"net/http"
@@ -42,7 +43,7 @@ func AddEventAttrs(ctx context.Context, attrs ...slog.Attr) {
 type responseWriterWrapper struct {
 	http.ResponseWriter
 	statusCode   int
-	bytesWritten int
+	bytesWritten int64
 }
 
 func (rw *responseWriterWrapper) WriteHeader(code int) {
@@ -55,8 +56,34 @@ func (rw *responseWriterWrapper) Write(b []byte) (int, error) {
 	if err != nil {
 		return n, fmt.Errorf("failed to write response writer for wide log: %w", err)
 	}
-	rw.bytesWritten += n
+	rw.bytesWritten += int64(n)
 	return n, nil
+}
+
+// Unwrap allows access to the underlying ResponseWriter, which could be needed by http.ResponseController.
+func (rw *responseWriterWrapper) Unwrap() http.ResponseWriter {
+	return rw.ResponseWriter
+}
+
+// ReadFrom needs to be implemented to satisfy the io.ReaderFrom interface, which is used by http.ServeContent for optimized file serving.
+func (rw *responseWriterWrapper) ReadFrom(r io.Reader) (int64, error) {
+	// If no status code has been set yet, use 200 OK.
+	// This mirrors the behavior of the standard library.
+	if rw.statusCode == 0 {
+		rw.WriteHeader(http.StatusOK)
+	}
+
+	// Use io.ReaderFrom for the optimized kernel transfer (zero-copy fast path).
+	if rf, ok := rw.ResponseWriter.(io.ReaderFrom); ok {
+		n, err := rf.ReadFrom(r)
+		rw.bytesWritten += n
+		return n, fmt.Errorf("failed to read from response writer for wide log: %w", err)
+	}
+
+	// Fallback to normal io.Copy when the fast path is not supported.
+	n, err := io.Copy(rw.ResponseWriter, r)
+	rw.bytesWritten += n
+	return n, fmt.Errorf("failed to io copy for wide log: %w", err)
 }
 
 // WideEventMiddleware wraps around all Handler and ensures logging is done in the end
@@ -81,7 +108,7 @@ func WideEventMiddleware(next http.Handler, sampleRate float64) http.Handler {
 			AddEventAttrs(ctx, slog.String("http.method", r.Method),
 				slog.String("http.path", r.URL.Path),
 				slog.Int("http.status_code", wrapped.statusCode),
-				slog.Int("http.bytes_written", wrapped.bytesWritten),
+				slog.Int64("http.bytes_written", wrapped.bytesWritten),
 				slog.Int64("duration_ms", time.Since(start).Milliseconds()),
 				slog.String("user_agent", r.UserAgent()))
 
