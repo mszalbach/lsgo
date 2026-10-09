@@ -1,6 +1,8 @@
 package filesystem_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/mszalbach/lsgo/internal/filesystem"
@@ -117,6 +119,29 @@ func Test_file_returns_its_children(t *testing.T) {
 			assert.ElementsMatch(t, actualChildren, tc.expectedChildren)
 		})
 	}
+}
+
+func Test_returns_partial_children_when_a_child_cannot_be_read(t *testing.T) {
+	// Given
+	dir := t.TempDir()
+	err := os.WriteFile(filepath.Join(dir, "visible.txt"), []byte("visible"), 0o600)
+	require.NoError(t, err)
+	err = os.Symlink(filepath.Join(dir, "missing.txt"), filepath.Join(dir, "broken-link"))
+	require.NoError(t, err)
+
+	root, err := filesystem.NewRoot(dir)
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, root.Close()) })
+
+	folder, err := root.File(".")
+	require.NoError(t, err)
+
+	// When
+	children, err := folder.Children()
+
+	// Then
+	require.ErrorIs(t, err, filesystem.ErrPartialChildren)
+	assert.Equal(t, "visible.txt", children[0].Name)
 }
 
 func Test_file_can_be_opened_as_an_os_file(t *testing.T) {

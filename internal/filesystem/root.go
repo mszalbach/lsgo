@@ -2,12 +2,16 @@
 package filesystem
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path"
 	"time"
 )
+
+// ErrPartialChildren indicates that some directory entries could not be read and the response can be used for partial listing.
+var ErrPartialChildren = errors.New("some directory entries could not be read")
 
 // Root represents a folder and its contents.
 type Root struct {
@@ -59,6 +63,8 @@ func (f *File) asFS() (fs.FS, error) {
 }
 
 // Children returns the children of the current File. It returns nil if the File is not a directory.
+// If an entry cannot be read, successfully read children are returned with the errors joined.
+// So handle partial errors.
 func (f *File) Children() ([]*File, error) {
 	if !f.IsDir {
 		return nil, nil
@@ -75,17 +81,25 @@ func (f *File) Children() ([]*File, error) {
 		return nil, fmt.Errorf("failed to read folder %s: %w", f.RelPath, err)
 	}
 
+	var readErrors []error
 	var children []*File
 	for _, entry := range dirEntries {
 		// Entries stats would not follow symlinks and the isDir property would be wrong so correctly open the child
 		file, err := f.root.File(path.Join(f.RelPath, entry.Name()))
 		if err != nil {
+			readErrors = append(
+				readErrors,
+				fmt.Errorf("failed to read child %s in folder %s: %w", entry.Name(), f.RelPath, err),
+			)
 			continue
 		}
 		children = append(children, file)
 	}
 
-	return children, nil
+	if len(readErrors) > 0 {
+		readErrors = append(readErrors, ErrPartialChildren)
+	}
+	return children, errors.Join(readErrors...)
 }
 
 // File returns a File from the current Root.
