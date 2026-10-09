@@ -12,7 +12,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	// needed for scratch images to have timezone information
 	_ "time/tzdata"
 
@@ -61,7 +60,6 @@ func run(config *config) error {
 		Addr:              config.addr,
 		Handler:           webServer.Routes(),
 		ReadTimeout:       5 * time.Second,
-		WriteTimeout:      5 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
