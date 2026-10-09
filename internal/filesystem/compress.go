@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"slices"
+	"strings"
 )
 
 // WriteZipArchive creates a zip from the given files and writes it to the io.Writer.
 func WriteZipArchive(w io.Writer, files ...*File) error {
+	files = omitRedundantSelections(files)
 	zipWriter := zip.NewWriter(w)
 
 	for _, file := range files {
@@ -31,6 +34,41 @@ func WriteZipArchive(w io.Writer, files ...*File) error {
 	}
 
 	return nil
+}
+
+func omitRedundantSelections(files []*File) []*File {
+	if len(files) == 0 {
+		return nil
+	}
+	// sort lexicographically so children are already after their parents
+	slices.SortFunc(files, func(a, b *File) int {
+		return strings.Compare(a.RelPath, b.RelPath)
+	})
+
+	var result []*File
+	var activeDirs []string
+
+	for _, file := range files {
+		// Skip if child of an already included parent directory
+		isRedundant := false
+		for _, dirPrefix := range activeDirs {
+			if strings.HasPrefix(file.RelPath, dirPrefix) {
+				isRedundant = true
+				break
+			}
+		}
+		if isRedundant {
+			continue
+		}
+
+		result = append(result, file)
+
+		if file.IsDir {
+			activeDirs = append(activeDirs, file.RelPath+"/")
+		}
+	}
+
+	return result
 }
 
 func addFolder(zipWriter *zip.Writer, folder *File) error {

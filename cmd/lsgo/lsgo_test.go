@@ -459,16 +459,12 @@ func Test_should_provide_downloads_as_zip(t *testing.T) {
 				"folderWithDuplicateFiles/folder/a.md",
 			},
 		},
-		"two folder with same file name in it selected": {
+		"two folder where one contains the other": {
 			paths: []string{"a.md", "folderWithDuplicateFiles", "folderWithDuplicateFiles/folder"},
-			// TODO thats wrong and a.md is overwritten
 			expectedFileNames: []string{
 				"a.md",
 				"folderWithDuplicateFiles/",
 				"folderWithDuplicateFiles/a.md",
-				"folderWithDuplicateFiles/folder/",
-				"folderWithDuplicateFiles/folder/a.md",
-				// the same file is added twice with the same complete name. Edge case should not happen in lsgo itself
 				"folderWithDuplicateFiles/folder/",
 				"folderWithDuplicateFiles/folder/a.md",
 			},
