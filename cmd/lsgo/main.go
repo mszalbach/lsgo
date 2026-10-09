@@ -5,12 +5,14 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
 	// needed for scratch images to have timezone information
 	_ "time/tzdata"
 
@@ -20,9 +22,6 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
-
 	config, err := parseFlags(os.Args[1:], os.Stderr)
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -31,17 +30,29 @@ func main() {
 		os.Exit(2)
 	}
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With(
+		slog.String("address", config.addr),
+		slog.String("folder", config.folder),
+		slog.String("baseURL", config.baseURL),
+	)
+
+	slog.SetDefault(logger)
+	err = run(config)
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+func run(config *config) error {
 	root, err := filesystem.NewRoot(config.folder)
 	if err != nil {
-		slog.Error("Failed to open root folder", slog.String("folder", config.folder), slog.Any("error", err))
-		os.Exit(1)
+		return fmt.Errorf("failed to open root folder: %w", err)
 	}
 	defer root.Close()
 
 	renderer, err := web.NewHTMLRenderer(config.baseURL, assets.Templates, "html/base.tmpl")
 	if err != nil {
-		slog.Error("Failed to create handler for web server", slog.Any("error", err))
-		panic(err)
+		return fmt.Errorf("failed to create HTML renderer: %w", err)
 	}
 
 	webServer := web.NewRouter(config.baseURL, renderer, root, config.maxInlineFileSize, config.logSampleRate)
@@ -54,25 +65,32 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	stopContext, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	cancelCtx, cancel := context.WithCancelCause(context.Background())
+	defer cancel(nil)
+	stopContext, stop := signal.NotifyContext(cancelCtx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
 	go func() {
-		slog.Info("Serving folder", "address", config.addr, "folder", config.folder)
+		slog.Info("Serving folder")
 		err := server.ListenAndServe()
 		if !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("Failed to start server", "error", err)
-			panic(err)
+			cancel(err)
 		}
 	}()
 
 	<-stopContext.Done()
-	slog.Info("Graceful shutdown")
+	slog.Info("Shutting down server ...")
 	timeoutCtx, timeoutFunc := context.WithTimeout(context.Background(), 10*time.Second)
 	defer timeoutFunc()
 
 	stopErr := server.Shutdown(timeoutCtx)
 	if stopErr != nil {
-		slog.Warn("Failed to stop server", slog.Any("error", stopErr))
+		return fmt.Errorf("failed to shutdown server: %w", stopErr)
 	}
+
+	err = context.Cause(stopContext)
+	if !errors.Is(err, context.Canceled) {
+		return fmt.Errorf("server stopped with error: %w", err)
+	}
+	return nil
 }
