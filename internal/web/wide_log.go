@@ -115,6 +115,7 @@ func WideEventMiddleware(next http.Handler, sampleRate float64) http.Handler {
 			var level slog.Level
 			switch {
 			case we.isImportantEvent():
+				level = slog.LevelError
 			case wrapped.statusCode >= 500:
 				level = slog.LevelError
 			case wrapped.statusCode >= 400:

@@ -82,12 +82,14 @@ func (s Router) lsHandler(w http.ResponseWriter, r *http.Request) {
 func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		AddEventAttrs(r.Context(), slog.Any("error", err))
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
 	selectedPaths := r.PostForm["paths"]
 	if len(selectedPaths) == 0 {
+		AddEventAttrs(r.Context(), slog.Any("error", err))
 		http.Error(w, "No files selected", http.StatusBadRequest)
 		return
 	}
@@ -96,6 +98,7 @@ func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 	for _, selectedPath := range selectedPaths {
 		file, err := s.root.File(selectedPath)
 		if err != nil {
+			AddEventAttrs(r.Context(), slog.Any("error", err))
 			http.Error(w, "File not found", http.StatusBadRequest)
 			return
 		}
@@ -139,13 +142,13 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, r *http.Request, file
 			"html/pages/denied.tmpl",
 		)
 	default:
-		AddEventAttrs(r.Context(), slog.String("error.kind", "unknown"), slog.Any("render_error", err))
-		s.httpError(w, r, file, err)
+		AddEventAttrs(r.Context(), slog.String("error.kind", "unknown"))
+		s.httpError(w, r, file, err, "An unexpected error occurred while trying to open the file.")
 		return
 	}
 
 	if renderError != nil {
-		AddEventAttrs(r.Context(), slog.String("file", file.RelPath), slog.Any("error", renderError))
+		AddEventAttrs(r.Context(), slog.String("file", file.RelPath), slog.Any("render_error", renderError))
 		return
 	}
 }
@@ -154,7 +157,7 @@ func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesys
 	breadcrumb := createBreadcrumb(dir.RelPath)
 	folderData, err := folderDataFrom(dir)
 	if err != nil {
-		s.httpError(w, r, dir, err)
+		s.httpError(w, r, dir, err, "An unexpected error occurred while trying to read the folder.")
 		return
 	}
 
@@ -166,7 +169,7 @@ func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesys
 		"html/pages/folder.tmpl",
 	)
 	if err != nil {
-		s.httpError(w, r, dir, err)
+		s.httpError(w, r, dir, err, "An unexpected error occurred while trying to render the folder.")
 		return
 	}
 }
@@ -174,21 +177,21 @@ func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesys
 func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesystem.File) {
 	osFile, err := file.AsOSFile()
 	if err != nil {
-		s.httpError(w, r, file, err)
+		s.httpError(w, r, file, err, "An unexpected error occurred while trying to open the file.")
 		return
 	}
 	defer osFile.Close()
 
 	mediaType, err := detectMediaType(osFile)
 	if err != nil {
-		s.httpError(w, r, file, err)
+		s.httpError(w, r, file, err, "An unexpected error occurred while trying to detect the media type.")
 		return
 	}
 	w.Header().Set("Content-Type", mediaType)
 
 	isSafeMediaType, err := isSafeInlineMediaType(mediaType)
 	if err != nil {
-		s.httpError(w, r, file, err)
+		s.httpError(w, r, file, err, "An unexpected error occurred while trying to check the media type.")
 		return
 	}
 
@@ -204,13 +207,19 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 
-func (s Router) httpError(w http.ResponseWriter, r *http.Request, file *filesystem.File, err error) {
+func (s Router) httpError(
+	w http.ResponseWriter,
+	r *http.Request,
+	file *filesystem.File,
+	err error,
+	userErrorMsg string,
+) {
 	AddEventAttrs(r.Context(), slog.Any("error", err))
 	breadcrumb := createBreadcrumb(file.RelPath)
 	renderError := s.htmlRenderer.render(
 		w,
 		http.StatusInternalServerError,
-		data{Breadcrumb: breadcrumb, Content: fmt.Sprintf("Failed to serve %s: %s", file.RelPath, err)},
+		data{Breadcrumb: breadcrumb, Content: fmt.Sprintf("Failed to serve %s: %s", file.RelPath, userErrorMsg)},
 		"base",
 		"html/pages/error.tmpl",
 	)
@@ -218,7 +227,7 @@ func (s Router) httpError(w http.ResponseWriter, r *http.Request, file *filesyst
 	if renderError != nil {
 		// give up and use standard error handling
 		AddEventAttrs(r.Context(), slog.Any("render_error", renderError))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, userErrorMsg, http.StatusInternalServerError)
 		return
 	}
 }
