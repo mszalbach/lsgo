@@ -8,6 +8,15 @@
 LSGo lets you browse files in a web browser. Like the Linux `ls` command, it is designed to list files only, with the added ability to preview and download them.
 It is not intended for editing or creating files.
 
+## Features
+
+- Browse the contents of a chosen folder in a web browser.
+- Preview supported files inline, subject to a configurable maximum file size.
+- Download individual files, or select multiple files and folders to download them together as a ZIP archive.
+- Run as a local binary or in Docker.
+- Configure the listening address and an optional URL prefix for reverse-proxy setups.
+- Read-only: LSGo does not edit or create files.
+
 ## Installation
 
 The easiest way to run LSGo is with the provided Docker image. Replace `VERSION` with the release you want to use:
@@ -108,21 +117,6 @@ Then open [http://localhost:8080](http://localhost:8080) in your browser.
 ## Support
 
 You can open a GitHub issue.
-
-## Roadmap
-
-* [x] listing folders and files on the web
-* [x] sort by name, size, or date
-* [x] 404 handling
-* [x] forcing insecure media types to always be downloaded
-* [x] prevent overly large files from being rendered
-* [x] Packaging
-  * Docker container
-* [x] configurable base path for proxy usage
-* [x] dark mode support
-* [x] download folder/files as zip
-* [x] Signed Docker image + SBOM attestation
-* [ ] OIDC login
 
 ## Contributing
 
