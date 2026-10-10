@@ -148,22 +148,23 @@ func Test_browser_usage(t *testing.T) {
 			return names
 		}
 
-		// sometimes seems to be flaky
-		ariaSort := nameHeader.MustAttribute("aria-sort")
-		require.NotNil(t, ariaSort)
-		assert.Equal(t, "ascending", *ariaSort)
+		// since js is used to sort the table, we need to wait for the aria-sort attribute to be updated before checking the order of the files
+		waitForSort := func(sortOrder string) func(c *assert.CollectT) {
+			return func(c *assert.CollectT) {
+				ariaSort := nameHeader.MustAttribute("aria-sort")
+				assert.Equal(c, sortOrder, *ariaSort)
+			}
+		}
+
+		assert.EventuallyWithT(t, waitForSort("ascending"), 5*time.Second, 100*time.Millisecond)
 		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
 
 		nameHeader.MustClick()
-		ariaSort = nameHeader.MustAttribute("aria-sort")
-		require.NotNil(t, ariaSort)
-		assert.Equal(t, "descending", *ariaSort)
+		assert.EventuallyWithT(t, waitForSort("descending"), 5*time.Second, 100*time.Millisecond)
 		assert.Equal(t, []string{"team", "README.md", "project-plan.md", "meeting-notes.md", "budget.csv"}, fileNames())
 
 		nameHeader.MustClick()
-		ariaSort = nameHeader.MustAttribute("aria-sort")
-		require.NotNil(t, ariaSort)
-		assert.Equal(t, "ascending", *ariaSort)
+		assert.EventuallyWithT(t, waitForSort("ascending"), 5*time.Second, 100*time.Millisecond)
 		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
 	})
 
@@ -211,6 +212,7 @@ func Test_browser_usage(t *testing.T) {
 }
 
 func Test_brwoser_behind_proxy_usage(t *testing.T) {
+	// Setup
 	nw, err := network.New(t.Context())
 	require.NoError(t, err)
 	testcontainers.CleanupNetwork(t, nw)
@@ -225,6 +227,7 @@ func Test_brwoser_behind_proxy_usage(t *testing.T) {
 	browser := rod.New().ControlURL(debugURL).MustConnect().Timeout(10 * time.Second)
 	t.Cleanup(browser.MustClose)
 
+	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage("http://localhost:" + port.Port() + "/lsgo/files/team")
