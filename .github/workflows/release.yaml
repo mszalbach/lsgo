@@ -33,10 +33,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Build the npx command with optional dry-run flag
-          CMD="npx semantic-release"
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            CMD="$CMD --dry-run"
-          fi
-          
-          eval $CMD
+          npx semantic-release --dry-run=${{ inputs.dry_run }}
