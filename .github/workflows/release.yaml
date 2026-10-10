@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "preview without publishing"
+        description: "preview without creating a tag"
         required: true
         default: true
         type: boolean
@@ -16,8 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
-      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -29,10 +27,8 @@ jobs:
 
       - name: Install Semantic Release
         run: |
-          npm install --no-save semantic-release @semantic-release/github @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+          npm install --no-save semantic-release @semantic-release/commit-analyzer
 
       - name: Run Semantic Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx semantic-release --dry-run=${{ inputs.dry_run || github.event_name == 'schedule' }}

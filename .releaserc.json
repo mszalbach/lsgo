@@ -9,7 +9,6 @@
           { "type": "chore", "scope": "deps", "release": "patch" }
         ]
       }
-    ],
-    "@semantic-release/github"
+    ]
   ]
 }
