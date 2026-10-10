@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -15,6 +17,6 @@ jobs:
           fetch-depth: 0
 
       - name: Semantic Release
-        uses: go-semantic-release/action@v1.24.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        uses: cycjimmy/semantic-release-action@v7.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
