@@ -27,5 +27,6 @@ jobs:
         with:
           dry_run: ${{ inputs.dry_run }}
           skip_npm_plugin: true
+          config_file: .releaserc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
