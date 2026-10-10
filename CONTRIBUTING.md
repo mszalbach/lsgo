@@ -35,6 +35,8 @@ Releases are using [GoReleaser](https://goreleaser.com/) and GitHub Actions.
 1. Check main branch status
    Ensure all tests are passing on `main`.
 2. Manually run the Semantic Release workflow
-   In GitHub, open **Actions**, select the **Release** workflow, click **Run workflow**, and run it against `main`. The workflow is manually triggered; do not create or push a release tag yourself.
-3. Wait for the release to complete
-   Semantic Release determines the next version from the Conventional Commits since the previous release, creates the version tag, and the tag triggers the CI workflow to build and publish the release with GoReleaser. Check both workflow runs in Actions to confirm they succeed.
+   In GitHub, open **Actions**, select the **Release** workflow, and click **Run workflow** against `main`. If you are unsure about the proposed release, leave **preview without publishing** enabled (the default) and inspect the run output first.
+3. Publish the release
+   Once you have reviewed the preview, run the workflow again against `main` with **preview without publishing** disabled. The workflow is manually triggered; do not create or push a release tag yourself.
+4. Wait for the release to complete
+   Semantic Release determines the next version from the Conventional Commits since the previous release, creates the version tag, and the tag triggers the CI workflow to build and publish the release with GoReleaser. Check both workflow runs in **Actions** to confirm they succeed.
