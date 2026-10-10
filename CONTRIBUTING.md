@@ -32,20 +32,9 @@ Releases are using [GoReleaser](https://goreleaser.com/) and GitHub Actions.
 
 ## Cutting a New Release
 
-1. **Check main branch status**
+1. Check main branch status
    Ensure all tests are passing on `main`.
-
-2. **Determine the next version**
-   Follow [Semantic Versioning](https://semver.org/) (`vMAJOR.MINOR.PATCH`):
-   - `PATCH` for backwards-compatible bug fixes (`fix:`)
-   - `MINOR` for backwards-compatible features (`feat:`)
-   - `MAJOR` for breaking changes (`feat!:` or `BREAKING CHANGE:`)
-
-3. **Create and push a Git tag**
-   ```bash
-   # Create tag locally
-   git tag -a v1.2.0 -m "Release v1.2.0"
-
-   # Push tag to GitHub
-   git push origin v1.2.0
-    ```
+2. Manually run the Semantic Release workflow
+   In GitHub, open **Actions**, select the **Release** workflow, click **Run workflow**, and run it against `main`. The workflow is manually triggered; do not create or push a release tag yourself.
+3. Wait for the release to complete
+   Semantic Release determines the next version from the Conventional Commits since the previous release, creates the version tag, and the tag triggers the CI workflow to build and publish the release with GoReleaser. Check both workflow runs in Actions to confirm they succeed.
