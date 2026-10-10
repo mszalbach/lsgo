@@ -1,34 +1,127 @@
-.breadcrumb {
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 3.125rem 0;
+/* Global & Base Styles */
+body {
+    max-width: 72rem;
 }
 
-.breadcrumb ol {
-    display: flex;
-    flex-wrap: wrap;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    align-items: end;
+/* Global Focus Styles */
+:where(a, button, input, th[data-sort-key]):focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
 }
 
-.breadcrumb li:not(:last-child)::after {
-    display: inline-block;
-    content: "/";
+main {
+    overflow-x: auto;
+}
+
+/* Table Styles */
+table {
+    min-width: 40rem;
+}
+
+th,
+td {
+    &:first-child {
+        width: 2.75rem;
+        text-align: center;
+    }
+
+    &:nth-child(3) {
+        width: 7rem;
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    &:nth-child(4) {
+        width: 14rem;
+        white-space: nowrap;
+
+        @media (max-width: 40rem) {
+            width: 11rem;
+        }
+    }
+
+    &:last-child {
+        width: 4.5rem;
+        text-align: center;
+    }
 }
 
 th[data-sort-key] {
     cursor: pointer;
+
+    &:hover {
+        color: #41adff;
+    }
+
+    &[aria-sort="ascending"]::after {
+        content: " ↑";
+    }
+
+    &[aria-sort="descending"]::after {
+        content: " ↓";
+    }
 }
 
-th[data-sort-key][aria-sort="ascending"]::after {
-    content: " ↑";
+tbody {
+    tr:hover {
+        background-color: color-mix(in srgb, currentColor 8%, transparent);
+    }
+
+    td {
+        vertical-align: middle;
+
+        &:nth-child(2) {
+            overflow-wrap: anywhere;
+        }
+    }
 }
 
-th[data-sort-key][aria-sort="descending"]::after {
-    content: " ↓";
+td {
+    form {
+        display: inline;
+        margin: 0;
+    }
+
+    button {
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+        padding: 0.5rem;
+        margin: 0;
+
+        .icon {
+            display: block;
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+    }
+}
+
+/* Components */
+.breadcrumb {
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 2rem 0 1.5rem;
+
+    ol {
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        align-items: end;
+    }
+
+    li:not(:last-child)::after {
+        display: inline-block;
+        content: "/";
+        margin: 0 0.5rem;
+        opacity: 0.55;
+    }
+
+    a {
+        text-decoration-thickness: 0.08em;
+        text-underline-offset: 0.15em;
+    }
 }
 
 .selection-bar {
@@ -36,31 +129,44 @@ th[data-sort-key][aria-sort="descending"]::after {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1rem;
-}
+    flex-wrap: wrap;
 
-.selection-bar[aria-hidden="true"] {
-    visibility: hidden;
-}
+    &[aria-hidden="true"] {
+        visibility: hidden;
+    }
 
-.selection-bar form {
-    margin: 0;
+    form {
+        margin: 0;
+    }
+
+    button {
+        margin-bottom: 0;
+    }
 }
 
 .icon-link {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.15em;
+
+    .icon {
+        width: 1.25em;
+        height: 1.25em;
+        flex-shrink: 0;
+    }
 }
 
-.icon-link .icon {
-    width: 1.25em;
-    height: 1.25em;
-    flex-shrink: 0;
+/* Color Scheme */
+
+@media (prefers-color-scheme: light) {
+    a {
+        color: #005a9c;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
-
-    /* icons are black svg images which must change color to be seen in dark mode */
     .icon {
         filter: invert(1) hue-rotate(180deg);
     }
