@@ -2,6 +2,12 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "preview without publishing"
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   release:
@@ -19,6 +25,7 @@ jobs:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v7.1.0
         with:
+          dry_run: ${{ inputs.dry_run }}
           skip_npm_plugin: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
