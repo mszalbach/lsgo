@@ -1,6 +1,8 @@
 name: Release
 
 on:
+  schedule:
+    - cron: "0 0 * * 0"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -33,4 +35,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx semantic-release --dry-run=${{ inputs.dry_run }}
+          npx semantic-release --dry-run=${{ inputs.dry_run || github.event_name == 'schedule' }}
