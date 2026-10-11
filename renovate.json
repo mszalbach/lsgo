@@ -8,6 +8,7 @@
   "vulnerabilityAlerts": {
     "enabled": true
   },
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
   "postUpdateOptions": [
     "gomodTidy"
   ],
