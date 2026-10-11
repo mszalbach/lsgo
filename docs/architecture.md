@@ -1,4 +1,4 @@
-# Context
+# 1. Context & Scope
 
 ```mermaid
 C4Context
@@ -13,10 +13,7 @@ C4Context
     UpdateLayoutConfig($c4ShapeInRow="1", $c4BoundaryInRow="1")
 ```
 
-# Container
-
-The main package is allowed to access the other packages so it can create and initialize them.
-The Mermaid C4 diagrams lack styling, which can make links harder to read.
+# 2. Building Block View 
 
 ```mermaid
 C4Container
@@ -49,22 +46,7 @@ C4Container
     UpdateRelStyle(filesystemPkg, folder, $offsetY="-20", $offsetX="45")
 ```
 
-# Dynamic diagrams
-
-## Listing folders
-
-The web layer receives an untrusted path value from the request. It normalizes
-that value and passes it to `filesystem`, which is the security boundary for
-filesystem access. `filesystem` is created with `os.OpenRoot`, so lookups are
-relative to the configured folder and cannot escape that root. Only after the
-lookup succeeds does the web layer render a folder response.
-
-This should be a C4 Dynamic diagram, but Mermaid support is not quite there yet.
-
-The yellow blocks mark parts of the system where untrusted content may appear
-and must be handled carefully, such as URL encoding or correcting MIME types
-before content is served to a user.
-
+## 3. Runtime View
 
 ```mermaid
 flowchart LR
@@ -92,3 +74,18 @@ flowchart LR
     class request,folder,filesystem,browser untrusted
     class normalize,api,response trusted
 ```
+
+# 4. Deployment View 
+
+# 5. Architecture Decisions (ADRs)
+
+The project keeps its ADRs under [docs/decisions](./decisions).
+
+# 6. Risks and Technical Debt
+
+Priority is rated Low / Medium / High.
+
+| What                  | Type | Priority | Description                                                                                                   |
+| :-------------------- | :--- | :------- | :------------------------------------------------------------------------------------------------------------ |
+| `go-rod` is abandoned | Debt | Low      | Only used for the e2e tests for Browser tests.                                                                |
+| GO-2026-5932          | Risk | Low      | `golang.org/x/crypto` is used by testcontainers. Only used for the e2e tests to manage the Docker containers. |
