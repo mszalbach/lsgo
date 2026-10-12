@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: "38 14 * * 1-5"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
