@@ -45,7 +45,11 @@ jobs:
         run: |
           set -euo pipefail
           before_tags="$(git tag --list | sort)"
-          npx semantic-release --dry-run="$DRY_RUN"
+          if [[ "$DRY_RUN" == "true" ]]; then
+            npx semantic-release --dry-run="$DRY_RUN"
+          else
+            npx semantic-release
+          fi
           after_tags="$(git tag --list | sort)"
           mapfile -t new_tags < <(comm -13 <(printf '%s\n' "$before_tags") <(printf '%s\n' "$after_tags"))
           if (("${#new_tags[@]}" > 1)); then
