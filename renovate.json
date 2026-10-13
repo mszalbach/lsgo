@@ -12,5 +12,27 @@
   "postUpdateOptions": [
     "gomodTidy"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github\\/workflows\\/.*\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) packageName=(?<packageName>\\S+)\\s+GOLANG_VERSION:\\s*'(?<currentValue>[^']+)'"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "golang"
+      ],
+      "groupName": "Go version"
+    }
+  ],
   "automerge": true
 }
