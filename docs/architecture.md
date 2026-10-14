@@ -77,6 +77,33 @@ flowchart LR
 
 # 4. Deployment View 
 
+```mermaid
+C4Deployment
+    title Deployment View for LSGo with OAuth2 Proxy
+
+    Person(user, "User", "Uses a web browser to access files")
+
+    Deployment_Node(applicationHost, "Application host", "Server") {
+        Container(oauth2Proxy, "oauth2-proxy", "Reverse proxy", "Authenticates requests and forwards authorized requests to LSGo")
+        Container(lsgo, "LSGo", "Go application", "A Go application that serves a folder as a web page")
+        System_Ext(folder, "Folder", "A folder on the system where LSGo runs")
+    }
+
+    Deployment_Node(identityProviderHost, "External identity provider", "Hosted OpenID Connect service") {
+        System_Ext(identityProvider, "Identity Provider", "Authenticates users using OpenID Connect")
+    }
+
+    Rel(user, oauth2Proxy, "Accesses LSGo over HTTPS")
+    Rel(oauth2Proxy, identityProvider, "Authenticates users using OIDC")
+    Rel(oauth2Proxy, lsgo, "Forwards authorized requests over the private network")
+    Rel(lsgo, folder, "Reads folders and files")
+
+    UpdateLayoutConfig($c4ShapeInRow="1", $c4BoundaryInRow="2")
+
+    UpdateRelStyle(user, oauth2Proxy, $offsetY="-40", $offsetX="0")
+    UpdateRelStyle(oauth2Proxy, identityProvider, $offsetY="60", $offsetX="-70")
+```
+
 # 5. Architecture Decisions (ADRs)
 
 The project keeps its ADRs under [docs/decisions](./decisions).

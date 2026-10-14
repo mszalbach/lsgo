@@ -71,7 +71,7 @@ Successful verification confirms the attestation was signed by this repository's
 > [!WARNING]
 > LSGo makes the selected folder available in your web browser. Do not expose it directly to the internet.
 
-The default settings listen on `localhost:8080`, so the server is only available from the local machine. If you need to make it available to other users, run it behind a reverse proxy with TLS and authentication, such as OIDC or mTLS.
+The default settings listen on `localhost:8080`, so the server is only available from the local machine. If you need to make it available to other users, run it behind a reverse proxy with TLS and authentication, such as OIDC or mTLS. For production deployments, run LSGo behind [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy) and ensure the external connection uses HTTPS.
 
 Run LSGo as an unprivileged user, preferably inside a container. Only expose folders that are safe for the intended users to browse.
 
