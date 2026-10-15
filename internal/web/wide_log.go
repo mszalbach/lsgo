@@ -52,6 +52,10 @@ func (rw *responseWriterWrapper) WriteHeader(code int) {
 }
 
 func (rw *responseWriterWrapper) Write(b []byte) (int, error) {
+	if rw.statusCode == 0 {
+		rw.statusCode = http.StatusOK
+	}
+
 	n, err := rw.ResponseWriter.Write(b)
 	if err != nil {
 		return n, fmt.Errorf("failed to write response writer for wide log: %w", err)
@@ -77,13 +81,19 @@ func (rw *responseWriterWrapper) ReadFrom(r io.Reader) (int64, error) {
 	if rf, ok := rw.ResponseWriter.(io.ReaderFrom); ok {
 		n, err := rf.ReadFrom(r)
 		rw.bytesWritten += n
-		return n, fmt.Errorf("failed to read from response writer for wide log: %w", err)
+		if err != nil {
+			return n, fmt.Errorf("failed to read from response writer for wide log: %w", err)
+		}
+		return n, nil
 	}
 
 	// Fallback to normal io.Copy when the fast path is not supported.
 	n, err := io.Copy(rw.ResponseWriter, r)
 	rw.bytesWritten += n
-	return n, fmt.Errorf("failed to io copy for wide log: %w", err)
+	if err != nil {
+		return n, fmt.Errorf("failed to io copy for wide log: %w", err)
+	}
+	return n, nil
 }
 
 // WideEventMiddleware wraps around all Handler and ensures logging is done in the end
