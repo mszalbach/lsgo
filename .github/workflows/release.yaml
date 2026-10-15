@@ -22,7 +22,7 @@ jobs:
   qa:
     uses: ./.github/workflows/ci.yaml
 
-  release:
+  tag:
     needs: qa
     permissions:
       contents: write
@@ -62,9 +62,9 @@ jobs:
           fi
           printf 'release_tag=%s\n' "${new_tags[0]:-}" >> "$GITHUB_OUTPUT"
 
-  publish:
-    needs: release
-    if: needs.release.outputs.release_tag != ''
+  release:
+    needs: tag
+    if: needs.tag.outputs.release_tag != ''
     permissions:
       actions: read # needed for sbom task to see the release
       contents: write # needed by goreleaser to write release to github
@@ -75,7 +75,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.release.outputs.release_tag }}
+          ref: ${{ needs.tag.outputs.release_tag }}
           fetch-depth: 0 # needed for goreleaser to correctly create changelog
 
       - name: Set up Go
