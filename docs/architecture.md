@@ -52,8 +52,8 @@ C4Container
 flowchart LR
     browser[Browser]
     request[GET /files/PATH<br/>untrusted URL path]
-    normalize[web<br/>prefix ./ and filepath.Clean]
-    api[explorer<br/>root-relative lookup]
+    normalize[web<br/>normalize URL path]
+    api[filesystem<br/>root-relative lookup]
     boundary{os.Root containment<br/>configured folder only}
     folder[web<br/>serve folder]
     response[HTTP response]
