@@ -58,7 +58,6 @@ func appContainer(
 
 func nginxContainer(
 	t *testing.T,
-	nw *testcontainers.DockerNetwork,
 	options ...testcontainers.ContainerCustomizer,
 ) testcontainers.Container {
 	t.Helper()
@@ -80,7 +79,6 @@ func nginxContainer(
 			ContainerFilePath: "/etc/nginx/conf.d/default.conf",
 			FileMode:          0o644,
 		}),
-		network.WithNetwork([]string{"nginx"}, nw),
 		testcontainers.WithWaitStrategy(wait.ForListeningPort("80/tcp")),
 	}
 	containerOptions = append(containerOptions, options...)
@@ -211,14 +209,14 @@ func Test_browser_usage(t *testing.T) {
 	})
 }
 
-func Test_brwoser_behind_proxy_usage(t *testing.T) {
+func Test_browser_behind_proxy_usage(t *testing.T) {
 	// Setup
 	nw, err := network.New(t.Context())
 	require.NoError(t, err)
 	testcontainers.CleanupNetwork(t, nw)
 
 	appContainer(t, "/lsgo", network.WithNetwork([]string{"app"}, nw))
-	proxy := nginxContainer(t, nw)
+	proxy := nginxContainer(t, network.WithNetwork([]string{"nginx"}, nw))
 	port, err := proxy.MappedPort(t.Context(), "80")
 	require.NoError(t, err)
 
