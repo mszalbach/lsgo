@@ -21,6 +21,8 @@ linters:
     - nolintlint
     - wrapcheck
     - noinlineerr
+    - funcorder
+    - bodyclose
   exclusions:
     presets:
       - std-error-handling

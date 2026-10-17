@@ -63,6 +63,7 @@ func Test_should_serve_static_files(t *testing.T) {
 			// When
 			res, err := server.Client().Get(tc.url)
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			// Then
 			assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -132,6 +133,7 @@ func Test_should_list_files_in_folder(t *testing.T) {
 			// When
 			res, err := server.Client().Get(tc.url)
 			require.NoError(t, err)
+			defer res.Body.Close()
 			assert.Equal(t, http.StatusOK, res.StatusCode)
 
 			// Then
@@ -193,6 +195,7 @@ func Test_should_have_breadcrumb_navigation(t *testing.T) {
 			// When
 			res, err := server.Client().Get(tc.url)
 			require.NoError(t, err)
+			defer res.Body.Close()
 			assert.Equal(t, http.StatusOK, res.StatusCode)
 
 			// Then
@@ -250,6 +253,7 @@ func Test_should_serve_files(t *testing.T) {
 			// When
 			res, err := server.Client().Get(tc.url)
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			// Then
 			actualDownloadOnly := res.Header.Get("Content-Disposition") != ""
@@ -270,6 +274,7 @@ func Test_should_have_a_favicon(t *testing.T) {
 	// When
 	res, err := server.Client().Get("http://localhost/favicon.ico")
 	require.NoError(t, err)
+	defer res.Body.Close()
 
 	// Then
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -283,6 +288,7 @@ func Test_should_return_not_found_for_nonexistent_resource(t *testing.T) {
 	// When
 	res, err := server.Client().Get("http://localhost/files/A/B/C/DOES-NOT-EXIST.md")
 	require.NoError(t, err)
+	defer res.Body.Close()
 
 	// Then
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
@@ -319,6 +325,7 @@ func Test_http_security_headers(t *testing.T) {
 			// When
 			res, err := server.Client().Get(tc.url)
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			// Then
 			// Test selected headers to verify that the middleware is installed.
@@ -345,6 +352,7 @@ func Test_should_use_base_path_for_template_urls(t *testing.T) {
 			// When
 			res, err := server.Client().Get("http://localhost/files")
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			// Then
 			doc, err := goquery.NewDocumentFromReader(res.Body)
@@ -380,6 +388,7 @@ func Test_root_redirect_should_include_base_path(t *testing.T) {
 
 			res, err := client.Get("http://localhost/")
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			assert.Equal(t, http.StatusFound, res.StatusCode)
 			assert.Equal(t, tc.expectedPath, res.Header.Get("Location"))
@@ -394,6 +403,7 @@ func Test_should_have_a_turn_back_link_for_empty_folders(t *testing.T) {
 	// When
 	res, err := server.Client().Get("http://localhost/files/level1/level2/emptyDir")
 	require.NoError(t, err)
+	defer res.Body.Close()
 
 	// Then
 	assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -481,6 +491,7 @@ func Test_should_provide_downloads_as_zip(t *testing.T) {
 				"paths": tc.paths,
 			})
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			// Then
 			assert.Equal(t, http.StatusOK, res.StatusCode)
@@ -535,6 +546,7 @@ func Test_should_fail_for_non_valid_zip_requests(t *testing.T) {
 				"paths": tc.paths,
 			})
 			require.NoError(t, err)
+			defer res.Body.Close()
 
 			// Then
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode)

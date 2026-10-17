@@ -51,17 +51,6 @@ func (f *File) AsOSFile() (*os.File, error) {
 	return file, nil
 }
 
-// asFS will return a sub filesystem from the root.
-// So the relative folder paths are kept, which is needed for correctly zipping.
-func (f *File) asFS() (fs.FS, error) {
-	subFS, err := fs.Sub(f.root.osRoot.FS(), f.RelPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create sub fs for %s: %w", f.RelPath, err)
-	}
-
-	return subFS, nil
-}
-
 // Children returns the children of the current File. It returns nil if the File is not a directory.
 // If an entry cannot be read, successfully read children are returned with the errors joined.
 // So handle partial errors.
@@ -126,4 +115,15 @@ func (r *Root) Close() error {
 		return fmt.Errorf("failed to close root: %w", err)
 	}
 	return nil
+}
+
+// asFS will return a sub filesystem from the root.
+// So the relative folder paths are kept, which is needed for correctly zipping.
+func (f *File) asFS() (fs.FS, error) {
+	subFS, err := fs.Sub(f.root.osRoot.FS(), f.RelPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create sub fs for %s: %w", f.RelPath, err)
+	}
+
+	return subFS, nil
 }
