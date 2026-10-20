@@ -29,7 +29,8 @@
         "golang",
         "go"
       ],
-      "groupName": "Go version"
+      "groupName": "Go version",
+      "semanticCommitType": "fix"
     }
   ]
   // "automerge": true
