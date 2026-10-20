@@ -25,9 +25,6 @@
   ],
   "packageRules": [
     {
-      "matchManagers": [
-        "custom.regex"
-      ],
       "matchPackageNames": [
         "golang",
         "go"
