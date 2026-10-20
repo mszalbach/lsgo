@@ -33,6 +33,6 @@
       ],
       "groupName": "Go version"
     }
-  ],
-  "automerge": true
+  ]
+  // "automerge": true
 }
