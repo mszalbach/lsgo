@@ -32,6 +32,6 @@
       "groupName": "Go version",
       "semanticCommitType": "fix"
     }
-  ]
-  // "automerge": true
+  ],
+  "automerge": true
 }
