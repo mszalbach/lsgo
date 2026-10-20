@@ -29,7 +29,8 @@
         "custom.regex"
       ],
       "matchPackageNames": [
-        "golang"
+        "golang",
+        "go"
       ],
       "groupName": "Go version"
     }
