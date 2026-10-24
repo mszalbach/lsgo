@@ -10,13 +10,6 @@ permissions:
 on:
   schedule:
     - cron: "0 0 * * 3" # every Wednesday at 00:00 UTC
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "preview without creating a tag"
-        required: true
-        default: true
-        type: boolean
 
 jobs:
   qa:
@@ -44,15 +37,10 @@ jobs:
 
       - name: Run Semantic Release
         id: semantic-release
-        env:
-          DRY_RUN: ${{ inputs.dry_run || github.event_name != 'schedule' }}
         run: |
           set -euo pipefail
           before_tags="$(git tag --list | sort)"
-          if [[ "$DRY_RUN" == "true" ]]; then
-            npx semantic-release --dry-run="$DRY_RUN"
-          else
-            npx semantic-release
+          npx semantic-release
           fi
           after_tags="$(git tag --list | sort)"
           mapfile -t new_tags < <(comm -13 <(printf '%s\n' "$before_tags") <(printf '%s\n' "$after_tags"))
