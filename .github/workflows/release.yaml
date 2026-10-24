@@ -8,6 +8,7 @@ permissions:
   contents: read
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * 3" # every Wednesday at 00:00 UTC
 
