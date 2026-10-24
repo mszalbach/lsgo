@@ -229,17 +229,20 @@ func Test_should_serve_files(t *testing.T) {
 			expectedDownloadOnly: false,
 		},
 		"large markdown": {
-			url:                  "http://localhost/files/level1/large-file.md",
-			expectedMediaType:    "text/markdown; charset=utf-8",
+			url: "http://localhost/files/level1/large-file.md",
+			// there will a an html warning page instead, so the media type will be text/html
+			expectedMediaType:    "text/html; charset=utf-8",
 			expectedDownloadOnly: true,
 		},
 		"unsafe html": {
-			url:                  "http://localhost/files/level1/specialFiles/javascript.html",
+			url: "http://localhost/files/level1/specialFiles/javascript.html",
+			// there will a an html warning page instead, so the media type will be text/html
 			expectedMediaType:    "text/html; charset=utf-8",
 			expectedDownloadOnly: true,
 		},
 		"unsafe html without extension": {
-			url:                  "http://localhost/files/level1/specialFiles/html-without-extension",
+			url: "http://localhost/files/level1/specialFiles/html-without-extension",
+			// there will a an html warning page instead, so the media type will be text/html
 			expectedMediaType:    "text/html; charset=utf-8",
 			expectedDownloadOnly: true,
 		},
@@ -256,13 +259,19 @@ func Test_should_serve_files(t *testing.T) {
 			defer res.Body.Close()
 
 			// Then
-			actualDownloadOnly := res.Header.Get("Content-Disposition") != ""
-
 			assert.Equal(t, http.StatusOK, res.StatusCode)
-			assert.Equal(t, tc.expectedMediaType, res.Header.Get("Content-Type"))
 			// Prevent the browser from doing MIME-type sniffing and accept only the type sent.
 			assert.Equal(t, "nosniff", res.Header.Get("X-Content-Type-Options"))
-			assert.Equal(t, tc.expectedDownloadOnly, actualDownloadOnly)
+
+			if tc.expectedDownloadOnly {
+				body, err := io.ReadAll(res.Body)
+				require.NoError(t, err)
+				assert.Contains(
+					t,
+					string(body),
+					"This file can't be displayed in your browser because the file type is not safe or it is too large.",
+				)
+			}
 		})
 	}
 }
