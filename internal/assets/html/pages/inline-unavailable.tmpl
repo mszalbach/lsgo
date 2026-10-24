@@ -6,7 +6,7 @@
     <p>This file can't be displayed in your browser because the file type is not safe or it is too large.</p>
     <form action="{{.BaseURL}}/api/download/zip" method="POST">
         <input type="hidden" name="paths" value="{{.Content}}"/>
-        <button type="submit">Download</button>
+        <button type="submit" aria-label="Download {{.Content}}">Download</button>
     </form>
     <p><a href="{{.BaseURL}}/files/{{(parentBreadcrumb .Breadcrumb).RelPath.URLPath}}">Turn back.</a></p>
 </section>
