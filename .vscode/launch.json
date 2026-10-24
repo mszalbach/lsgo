@@ -10,7 +10,11 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/lsgo",
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "args": [
+               "--folder", 
+               "e2e/testdata"
+            ]
         }
     ]
 }
