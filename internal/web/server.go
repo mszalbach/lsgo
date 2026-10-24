@@ -190,7 +190,6 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 		s.httpError(w, r, file, err, "An unexpected error occurred while trying to detect the media type.")
 		return
 	}
-	w.Header().Set("Content-Type", mediaType)
 
 	isSafeMediaType, err := isSafeInlineMediaType(mediaType)
 	if err != nil {
@@ -202,11 +201,21 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	isUnsafeMediaType := !isSafeMediaType
 
 	if isFileTooLarge || isUnsafeMediaType {
-		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{
-			"filename": file.Name,
-		}))
+		breadcrumb := createBreadcrumb(file.RelPath)
+		err = s.htmlRenderer.render(
+			w,
+			http.StatusOK,
+			data{Breadcrumb: breadcrumb, Content: file.RelPath},
+			"base",
+			"html/pages/inline-unavailable.tmpl",
+		)
+		if err != nil {
+			s.httpError(w, r, file, err, "An unexpected error occurred while trying to render the file.")
+		}
+		return
 	}
 
+	w.Header().Set("Content-Type", mediaType)
 	http.ServeContent(w, r, file.Name, file.ModTime, osFile)
 }
 

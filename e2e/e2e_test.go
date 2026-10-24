@@ -91,6 +91,7 @@ func nginxContainer(
 }
 
 func Test_browser_usage(t *testing.T) {
+	t.Parallel()
 	// Setup
 	container := appContainer(t, "")
 	port, err := container.MappedPort(t.Context(), "8080")
@@ -174,6 +175,36 @@ func Test_browser_usage(t *testing.T) {
 		assert.Contains(t, page.MustElement("body").MustText(), "Shared project workspace")
 	})
 
+	t.Run("Unsafe file shows a warning page with a download link", func(t *testing.T) {
+		incognito := browser.MustIncognito()
+		page := incognito.MustPage("http://localhost:" + port.Port() + "/files/budget.csv")
+		t.Cleanup(page.MustClose)
+
+		assert.Contains(t, page.MustElement("h1").MustText(), "Preview unavailable")
+
+		downloadDir := t.TempDir()
+		waitForDownload := page.Browser().WaitDownload(downloadDir)
+		page.MustElement("form button[type='submit']").MustClick()
+		download := waitForDownload()
+
+		archive, err := zip.OpenReader(filepath.Join(downloadDir, download.GUID))
+		require.NoError(t, err)
+		t.Cleanup(func() { require.NoError(t, archive.Close()) })
+
+		require.Len(t, archive.File, 1)
+		assert.Equal(t, "budget.csv", archive.File[0].Name)
+		reader, err := archive.File[0].Open()
+		require.NoError(t, err)
+		content, err := io.ReadAll(reader)
+		require.NoError(t, err)
+		require.NoError(t, reader.Close())
+		assert.Equal(
+			t,
+			"category,planned,actual\nResearch,12000,10850\nDevelopment,45000,47200\nOperations,8000,7650",
+			string(content),
+		)
+	})
+
 	t.Run("Selected files and folders can be downloaded", func(t *testing.T) {
 		incognito := browser.MustIncognito()
 		page := incognito.MustPage("http://localhost:" + port.Port())
@@ -210,6 +241,7 @@ func Test_browser_usage(t *testing.T) {
 }
 
 func Test_browser_behind_proxy_usage(t *testing.T) {
+	t.Parallel()
 	// Setup
 	nw, err := network.New(t.Context())
 	require.NoError(t, err)
