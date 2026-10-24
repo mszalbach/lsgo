@@ -42,7 +42,6 @@ jobs:
           set -euo pipefail
           before_tags="$(git tag --list | sort)"
           npx semantic-release
-          fi
           after_tags="$(git tag --list | sort)"
           mapfile -t new_tags < <(comm -13 <(printf '%s\n' "$before_tags") <(printf '%s\n' "$after_tags"))
           if (("${#new_tags[@]}" > 1)); then
