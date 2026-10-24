@@ -269,7 +269,7 @@ func Test_should_serve_files(t *testing.T) {
 				assert.Contains(
 					t,
 					string(body),
-					"This file can't be displayed in your browser because the file type is not safe or it is too large.",
+					"Preview unavailable",
 				)
 			}
 		})

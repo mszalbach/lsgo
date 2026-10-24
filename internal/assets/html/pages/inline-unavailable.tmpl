@@ -3,7 +3,7 @@
 {{define "page:content"}}
 <section aria-labelledby="preview-unavailable-title">
     <h1 id="preview-unavailable-title">Preview unavailable</h1>
-    <p>This file can't be displayed in your browser because the file type is not safe or it is too large.</p>
+    <p>This file can't be displayed in your browser because its type is unsafe or it's too large.</p>
     <form action="{{.BaseURL}}/api/download/zip" method="POST">
         <input type="hidden" name="paths" value="{{.Content}}"/>
         <button type="submit" aria-label="Download {{.Content}}">Download</button>
