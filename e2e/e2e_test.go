@@ -91,6 +91,7 @@ func nginxContainer(
 }
 
 func Test_browser_usage(t *testing.T) {
+	t.Parallel()
 	// Setup
 	container := appContainer(t, "")
 	port, err := container.MappedPort(t.Context(), "8080")
@@ -240,6 +241,7 @@ func Test_browser_usage(t *testing.T) {
 }
 
 func Test_browser_behind_proxy_usage(t *testing.T) {
+	t.Parallel()
 	// Setup
 	nw, err := network.New(t.Context())
 	require.NoError(t, err)
