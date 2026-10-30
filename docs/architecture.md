@@ -16,8 +16,8 @@ C4Context
 # 2. Building Block View 
 
 ```mermaid
-C4Container
-    title Container View for LSGo
+C4Component
+    title Component View for LSGo
 
     Person(user, "User", "Uses a web browser to access files")
 
