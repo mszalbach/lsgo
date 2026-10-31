@@ -32,7 +32,9 @@ Releases are using [GoReleaser](https://goreleaser.com/) and GitHub Actions.
 
 ## Cutting a New Release
 
-1. Manually run the Semantic Release workflow
-   In GitHub, open **Actions**, select the **Release** workflow, and click **Run workflow** against `main`. If you are unsure about the proposed release, leave **preview without publishing** enabled (the default) and inspect the run output first.
-2. Publish the release
-   Once you have reviewed the preview, run the workflow again against `main` with **preview without publishing** disabled. The workflow is manually triggered; do not create or push a release tag yourself.
+1. Wait for the scheduled weekly release workflow, or start the **Release** workflow manually from **Actions** on `main`.
+2. If there are no commits that would trigger a semantic release, create and push an empty commit:
+   ```sh
+   git commit --allow-empty -m "fix: trigger release" && git push origin main
+   ```
+   Do not create or push a release tag yourself.
