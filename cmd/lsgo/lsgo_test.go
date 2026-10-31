@@ -52,8 +52,9 @@ func Test_should_serve_static_files(t *testing.T) {
 	testCases := map[string]struct {
 		url string
 	}{
-		"SOURCES.md": {url: "http://localhost/static/SOURCES.md"},
-		"css":        {url: "http://localhost/static/css/ls.css"},
+		"SOURCES.md":  {url: "http://localhost/static/SOURCES.md"},
+		"css":         {url: "http://localhost/static/css/ls.css"},
+		"folder view": {url: "http://localhost/static/js/folder-view.js"},
 	}
 	// Given
 	server := createTestServer(t)
