@@ -40,32 +40,30 @@ func omitRedundantSelections(files []*File) []*File {
 	if len(files) == 0 {
 		return nil
 	}
+
 	files = slices.Clone(files)
-	// sort lexicographically so children are already after their parents
+
+	// Sort lexicographically so children naturally follow their parents
 	slices.SortFunc(files, func(a, b *File) int {
 		return strings.Compare(a.RelPath, b.RelPath)
 	})
 
-	var result []*File
-	var activeDirs []string
+	result := make([]*File, 0, len(files))
+	var currentPrefix string
 
 	for _, file := range files {
-		// Skip if child of an already included parent directory
-		isRedundant := false
-		for _, dirPrefix := range activeDirs {
-			if strings.HasPrefix(file.RelPath, dirPrefix) {
-				isRedundant = true
-				break
-			}
-		}
-		if isRedundant {
+		// If we have an active parent prefix and this file falls under it, skip it
+		if currentPrefix != "" && strings.HasPrefix(file.RelPath, currentPrefix) {
 			continue
 		}
 
 		result = append(result, file)
 
+		// If this file is a directory, it becomes the new active exclusion prefix
 		if file.IsDir {
-			activeDirs = append(activeDirs, file.RelPath+"/")
+			currentPrefix = file.RelPath + "/"
+		} else {
+			currentPrefix = ""
 		}
 	}
 
