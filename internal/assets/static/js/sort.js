@@ -14,6 +14,7 @@
   if (!table || !body) return;
 
   const sortButtons = document.querySelectorAll(".sort-controls button[data-sort-key]");
+  const storageKey = "lsgo-folder-sort";
   const sortRows = (button, order) => {
     const key = button.dataset.sortKey;
     const ascending = order === "ascending";
@@ -45,9 +46,31 @@
     button.addEventListener("click", () => {
       const order = button.getAttribute("aria-sort") === "ascending" ? "descending" : "ascending";
       sortRows(button, order);
+      try {
+        window.localStorage.setItem(storageKey, `${button.dataset.sortKey}:${order}`);
+      } catch (error) {
+        console.warn("Unable to save the folder sort preference.", error);
+      }
     });
   });
 
-  const defaultButton = document.querySelector('.sort-controls button[data-sort-key="name"]');
-  if (defaultButton) sortRows(defaultButton, "ascending");
+  let savedSort = "";
+  try {
+    savedSort = window.localStorage.getItem(storageKey) ?? "";
+  } catch (error) {
+    console.warn("Unable to read the saved folder sort preference.", error);
+  }
+
+  const [savedKey, savedOrder] = savedSort.split(":");
+  const savedButton = Array.from(sortButtons).find(
+    (button) => button.dataset.sortKey === savedKey,
+  );
+  const initialButton = savedButton ?? document.querySelector(
+    '.sort-controls button[data-sort-key="name"]',
+  );
+  const initialOrder =
+    savedButton && (savedOrder === "ascending" || savedOrder === "descending")
+      ? savedOrder
+      : "ascending";
+  if (initialButton) sortRows(initialButton, initialOrder);
 })();
