@@ -89,7 +89,6 @@ func (s Router) downloadZipHandler(w http.ResponseWriter, r *http.Request) {
 
 	selectedPaths := r.PostForm["paths"]
 	if len(selectedPaths) == 0 {
-		AddEventAttrs(r.Context(), slog.Any("error", err))
 		http.Error(w, "No files selected", http.StatusBadRequest)
 		return
 	}
