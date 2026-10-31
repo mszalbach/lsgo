@@ -3,6 +3,8 @@
 [![build](https://github.com/mszalbach/lsgo/actions/workflows/ci.yaml/badge.svg)](https://github.com/mszalbach/lsgo/actions/workflows/ci.yaml)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
+![LSGo UI](docs/assets/lsgo.gif)
+
 ## Description
 
 LSGo lets you browse files in a web browser. Like the Linux `ls` command, it is designed to list files only, with the added ability to preview and download them.
