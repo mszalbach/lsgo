@@ -16,7 +16,6 @@
   const setView = (nextView) => {
     if (nextView !== "list" && nextView !== "grid") return;
     table.dataset.view = nextView;
-    controls.dataset.view = nextView;
     buttons.forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.folderView === nextView));
     });

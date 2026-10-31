@@ -203,10 +203,6 @@ td {
         border-radius: 0.5rem;
     }
 
-    tr:hover {
-        background-color: color-mix(in srgb, currentColor 8%, transparent);
-    }
-
     tbody > tr[data-sort-group="1"]:first-child,
     tbody > tr[data-sort-group="0"] + tr[data-sort-group="1"] {
         grid-column: 1;
