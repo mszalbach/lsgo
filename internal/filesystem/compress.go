@@ -40,6 +40,7 @@ func omitRedundantSelections(files []*File) []*File {
 	if len(files) == 0 {
 		return nil
 	}
+	files = slices.Clone(files)
 	// sort lexicographically so children are already after their parents
 	slices.SortFunc(files, func(a, b *File) int {
 		return strings.Compare(a.RelPath, b.RelPath)
