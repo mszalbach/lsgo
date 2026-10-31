@@ -24,10 +24,7 @@ func NewRoot(rootPath string) (Root, error) {
 	if err != nil {
 		return Root{}, fmt.Errorf("failed to create root %s: %w", rootPath, err)
 	}
-
-	return Root{
-		osRoot: root,
-	}, nil
+	return Root{osRoot: root}, nil
 }
 
 // File represents either a file or a directory within a Root.
@@ -71,7 +68,7 @@ func (f *File) Children() ([]*File, error) {
 	}
 
 	var readErrors []error
-	var children []*File
+	children := make([]*File, 0, len(dirEntries))
 	for _, entry := range dirEntries {
 		// Entries stats would not follow symlinks and the isDir property would be wrong so correctly open the child
 		file, err := f.root.File(path.Join(f.RelPath, entry.Name()))
