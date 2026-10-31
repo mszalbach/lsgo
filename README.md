@@ -13,6 +13,8 @@ It is not intended for editing or creating files.
 ## Features
 
 - Browse the contents of a chosen folder in a web browser.
+- Automatically match the system's light or dark color scheme.
+- Switch between list and grid views of files.
 - Preview supported files inline, subject to a configurable maximum file size.
 - Download individual files, or select multiple files and folders to download them together as a ZIP archive.
 - Run as a local binary or in Docker.
