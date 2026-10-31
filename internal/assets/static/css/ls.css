@@ -58,11 +58,11 @@ td {
         padding: 0.4rem 0.6rem;
     }
 
-    button[aria-sort="ascending"]::after {
+    button[data-sort-order="ascending"]::after {
         content: " ↑";
     }
 
-    button[aria-sort="descending"]::after {
+    button[data-sort-order="descending"]::after {
         content: " ↓";
     }
 }

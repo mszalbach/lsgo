@@ -15,9 +15,9 @@
 <div id="folder-view-controls" class="folder-view-controls" role="group" aria-label="Folder controls" hidden>
   <div class="sort-controls" role="group" aria-label="Sort folder contents">
     <span>Sort by:</span>
-    <button type="button" data-sort-key="name" aria-sort="ascending">Name</button>
-    <button type="button" data-sort-key="size" aria-sort="none">Size</button>
-    <button type="button" data-sort-key="time" aria-sort="none">Last Modified</button>
+    <button type="button" data-sort-key="name" aria-pressed="true" aria-label="Name, sorted ascending" data-sort-order="ascending">Name</button>
+    <button type="button" data-sort-key="size" aria-pressed="false">Size</button>
+    <button type="button" data-sort-key="time" aria-pressed="false">Last Modified</button>
   </div>
   <div role="group" aria-label="Choose folder layout">
     <button type="button" data-folder-view="list" aria-pressed="true">List</button>
@@ -28,9 +28,9 @@
     <thead>
       <tr>
         <th><input type="checkbox" name="master" aria-label="Select all files and folders" /></th>
-        <th>Name</th>
-        <th>Size</th>
-        <th>Last Modified</th>
+        <th scope="col" data-sort-key="name" aria-sort="ascending">Name</th>
+        <th scope="col" data-sort-key="size" aria-sort="none">Size</th>
+        <th scope="col" data-sort-key="time" aria-sort="none">Last Modified</th>
         <th>Action</th>
       </tr>
     </thead>

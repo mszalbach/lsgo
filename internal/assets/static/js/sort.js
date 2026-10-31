@@ -14,15 +14,31 @@
   if (!table || !body) return;
 
   const sortButtons = document.querySelectorAll(".sort-controls button[data-sort-key]");
+  const sortHeaders = table.querySelectorAll("thead th[data-sort-key]");
   const storageKey = "lsgo-folder-sort";
   const sortRows = (button, order) => {
     const key = button.dataset.sortKey;
     const ascending = order === "ascending";
 
     sortButtons.forEach((sortButton) => {
-      sortButton.setAttribute(
+      const isActive = sortButton === button;
+      sortButton.setAttribute("aria-pressed", String(isActive));
+      if (isActive) {
+        sortButton.setAttribute(
+          "aria-label",
+          `${sortButton.textContent.trim()}, sorted ${order}`,
+        );
+        sortButton.dataset.sortOrder = order;
+      } else {
+        sortButton.removeAttribute("aria-label");
+        delete sortButton.dataset.sortOrder;
+      }
+    });
+
+    sortHeaders.forEach((header) => {
+      header.setAttribute(
         "aria-sort",
-        sortButton === button ? order : "none",
+        header.dataset.sortKey === key ? order : "none",
       );
     });
 
@@ -44,7 +60,7 @@
 
   sortButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const order = button.getAttribute("aria-sort") === "ascending" ? "descending" : "ascending";
+      const order = button.dataset.sortOrder === "ascending" ? "descending" : "ascending";
       sortRows(button, order);
       try {
         window.localStorage.setItem(storageKey, `${button.dataset.sortKey}:${order}`);

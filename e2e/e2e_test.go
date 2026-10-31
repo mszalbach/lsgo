@@ -150,8 +150,8 @@ func Test_browser_usage(t *testing.T) {
 		// Wait for the sort control to reflect the applied order before checking the files.
 		waitForSort := func(sortOrder string) func(c *assert.CollectT) {
 			return func(c *assert.CollectT) {
-				ariaSort := nameSort.MustAttribute("aria-sort")
-				assert.Equal(c, sortOrder, *ariaSort)
+				ariaLabel := nameSort.MustAttribute("aria-label")
+				assert.Equal(c, "Name, sorted "+sortOrder, *ariaLabel)
 			}
 		}
 
@@ -169,7 +169,9 @@ func Test_browser_usage(t *testing.T) {
 
 		page.MustElement("button[data-folder-view='list']").MustClick()
 		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
-		assert.Empty(t, page.MustElements("th[data-sort-key]"))
+		nameHeaderSort := page.MustElement("th[data-sort-key='name']").MustAttribute("aria-sort")
+		require.NotNil(t, nameHeaderSort)
+		assert.Equal(t, "ascending", *nameHeaderSort)
 	})
 
 	t.Run("Normal file is shown in browser", func(t *testing.T) {
