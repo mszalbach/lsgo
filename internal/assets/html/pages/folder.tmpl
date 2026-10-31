@@ -12,28 +12,40 @@
     <button type="submit">Download Selected</button>
   </form>
 </div>
-<table>
+<div id="folder-view-controls" class="folder-view-controls" role="group" aria-label="Folder controls" hidden>
+  <div class="sort-controls" role="group" aria-label="Sort folder contents">
+    <span>Sort by:</span>
+    <button type="button" data-sort-key="name" aria-sort="ascending">Name</button>
+    <button type="button" data-sort-key="size" aria-sort="none">Size</button>
+    <button type="button" data-sort-key="time" aria-sort="none">Last Modified</button>
+  </div>
+  <div role="group" aria-label="Choose folder layout">
+    <button type="button" data-folder-view="list" aria-pressed="true">List</button>
+    <button type="button" data-folder-view="grid" aria-pressed="false">Grid</button>
+  </div>
+</div>
+<table id="folder-contents" data-view="list">
     <thead>
       <tr>
         <th><input type="checkbox" name="master" aria-label="Select all files and folders" /></th>
-        <th data-sort-key="name" tabindex="0" aria-sort="none">Name</th>
-        <th data-sort-key="size" tabindex="0" aria-sort="none">Size</th>
-        <th data-sort-key="time" tabindex="0" aria-sort="none">Last Modified</th>
+        <th>Name</th>
+        <th>Size</th>
+        <th>Last Modified</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
       {{range .Content}}
       <tr data-sort-group="{{if .IsDir}}0{{else}}1{{end}}">
-      <td><input type="checkbox" name="paths" value="{{.RelPath}}" form="download-selected" aria-label="Select {{.Name}}"/></td>
+      <td class="selection-cell"><input type="checkbox" name="paths" value="{{.RelPath}}" form="download-selected" aria-label="Select {{.Name}}"/></td>
         {{if .IsDir}}
-          <td data-sort-column="name" data-sort-value="{{.Name}}"><a href="{{$.BaseURL}}/files/{{.RelPath.URLPath}}" class="icon-link"><img src="{{$.BaseURL}}/static/icons/folder.svg" alt="folder" class="icon">{{.Name}}</a></td>
+          <td class="name-cell" data-sort-column="name" data-sort-value="{{.Name}}"><a href="{{$.BaseURL}}/files/{{.RelPath.URLPath}}" class="icon-link"><img src="{{$.BaseURL}}/static/icons/folder.svg" alt="folder" class="icon">{{.Name}}</a></td>
         {{else}}
-          <td data-sort-column="name" data-sort-value="{{.Name}}"><a href="{{$.BaseURL}}/files/{{.RelPath.URLPath}}" class="icon-link"><img src="{{$.BaseURL}}/static/icons/article.svg" alt="file" class="icon">{{.Name}}</a></td>
+          <td class="name-cell" data-sort-column="name" data-sort-value="{{.Name}}"><a href="{{$.BaseURL}}/files/{{.RelPath.URLPath}}" class="icon-link"><img src="{{$.BaseURL}}/static/icons/article.svg" alt="file" class="icon">{{.Name}}</a></td>
         {{end}}
-        <td data-sort-column="size" data-sort-value="{{.Size}}">{{.Size | bytes}}</td>
-        <td data-sort-column="time" data-sort-value="{{.ModTime.Unix}}">{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
-        <td><form action="{{$.BaseURL}}/api/download/zip" method="POST"><input type="hidden" name="paths" value="{{.RelPath}}"/><button type="submit" aria-label="Download {{.Name}}"><img src="{{$.BaseURL}}/static/icons/download.svg" alt="download" class="icon"></button></form></td>
+        <td class="size-cell" data-sort-column="size" data-sort-value="{{.Size}}">{{.Size | bytes}}</td>
+        <td class="modified-cell" data-sort-column="time" data-sort-value="{{.ModTime.Unix}}">{{.ModTime.Format "2006-01-02 15:04:05 MST"}}</td>
+        <td class="action-cell"><form action="{{$.BaseURL}}/api/download/zip" method="POST"><input type="hidden" name="paths" value="{{.RelPath}}"/><button type="submit" aria-label="Download {{.Name}}"><img src="{{$.BaseURL}}/static/icons/download.svg" alt="download" class="icon"></button></form></td>
       </tr>
       {{end}}
     </tbody>

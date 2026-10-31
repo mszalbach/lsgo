@@ -3,6 +3,8 @@
 [![build](https://github.com/mszalbach/lsgo/actions/workflows/ci.yaml/badge.svg)](https://github.com/mszalbach/lsgo/actions/workflows/ci.yaml)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
+![LSGo UI](docs/assets/lsgo.gif)
+
 ## Description
 
 LSGo lets you browse files in a web browser. Like the Linux `ls` command, it is designed to list files only, with the added ability to preview and download them.
@@ -11,6 +13,8 @@ It is not intended for editing or creating files.
 ## Features
 
 - Browse the contents of a chosen folder in a web browser.
+- Automatically match the system's light or dark color scheme.
+- Switch between list and grid views of files.
 - Preview supported files inline, subject to a configurable maximum file size.
 - Download individual files, or select multiple files and folders to download them together as a ZIP archive.
 - Run as a local binary or in Docker.

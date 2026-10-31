@@ -137,7 +137,7 @@ func Test_browser_usage(t *testing.T) {
 		page := incognito.MustPage("http://localhost:" + port.Port())
 		t.Cleanup(page.MustClose)
 
-		nameHeader := page.MustElement("th[data-sort-key='name']")
+		nameSort := page.MustElement(".sort-controls button[data-sort-key='name']")
 		fileNames := func() []string {
 			links := page.MustElements("tbody tr td[data-sort-column='name'] a")
 			names := make([]string, 0, len(links))
@@ -147,10 +147,10 @@ func Test_browser_usage(t *testing.T) {
 			return names
 		}
 
-		// since js is used to sort the table, we need to wait for the aria-sort attribute to be updated before checking the order of the files
+		// Wait for the sort control to reflect the applied order before checking the files.
 		waitForSort := func(sortOrder string) func(c *assert.CollectT) {
 			return func(c *assert.CollectT) {
-				ariaSort := nameHeader.MustAttribute("aria-sort")
+				ariaSort := nameSort.MustAttribute("aria-sort")
 				assert.Equal(c, sortOrder, *ariaSort)
 			}
 		}
@@ -158,13 +158,18 @@ func Test_browser_usage(t *testing.T) {
 		assert.EventuallyWithT(t, waitForSort("ascending"), 5*time.Second, 100*time.Millisecond)
 		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
 
-		nameHeader.MustClick()
+		nameSort.MustClick()
 		assert.EventuallyWithT(t, waitForSort("descending"), 5*time.Second, 100*time.Millisecond)
 		assert.Equal(t, []string{"team", "README.md", "project-plan.md", "meeting-notes.md", "budget.csv"}, fileNames())
 
-		nameHeader.MustClick()
+		page.MustElement("button[data-folder-view='grid']").MustClick()
+		nameSort.MustClick()
 		assert.EventuallyWithT(t, waitForSort("ascending"), 5*time.Second, 100*time.Millisecond)
 		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
+
+		page.MustElement("button[data-folder-view='list']").MustClick()
+		assert.Equal(t, []string{"team", "budget.csv", "meeting-notes.md", "project-plan.md", "README.md"}, fileNames())
+		assert.Empty(t, page.MustElements("th[data-sort-key]"))
 	})
 
 	t.Run("Normal file is shown in browser", func(t *testing.T) {
