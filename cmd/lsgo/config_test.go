@@ -122,3 +122,28 @@ func Test_should_inform_about_parse_errors(t *testing.T) {
 		})
 	}
 }
+
+func Test_should_reject_invalid_log_sample_rates(t *testing.T) {
+	testCases := map[string]struct {
+		rate string
+	}{
+		"below minimum":     {rate: "-0.1"},
+		"above minimum":     {rate: "1.1"},
+		"not a number":      {rate: "NaN"},
+		"infinity":          {rate: "+Inf"},
+		"negative infinity": {rate: "-Inf"},
+		"string":            {rate: "Hello"},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			var buf bytes.Buffer
+			_, err := parseFlags([]string{"--log-sample-rate", tc.rate}, &buf)
+
+			require.Error(t, err)
+			assert.Contains(t, buf.String(), "must be between 0 and 1")
+			assert.Contains(t, buf.String(), "Usage of lsgo")
+			assert.Contains(t, buf.String(), "-log-sample-rate")
+		})
+	}
+}

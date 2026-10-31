@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -34,17 +36,19 @@ func parseFlags(args []string, output io.Writer) (*config, error) {
 		1_048_576,
 		"Maximum file size to display inline in bytes; larger files are download-only.",
 	)
-	fs.Float64Var(
-		&config.logSampleRate,
-		"log-sample-rate",
-		0.05,
-		"Sampling rate for successful, non-error logs (0.0 = 0%, 1.0 = 100%).",
-	)
+
+	sampleRate := &boundedInt{
+		Value: 0.05,
+		Min:   0,
+		Max:   1,
+	}
+	fs.Var(sampleRate, "log-sample-rate", "Sampling rate for successful, non-error logs (0.0 = 0%, 1.0 = 100%).")
 
 	err := fs.Parse(args)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
+	config.logSampleRate = sampleRate.Value
 	config.normalizeBaseURL()
 
 	return &config, nil
@@ -57,4 +61,27 @@ func (c *config) normalizeBaseURL() {
 		return
 	}
 	c.baseURL = "/" + strings.Trim(cleaned, "/")
+}
+
+type boundedInt struct {
+	Value float64
+	Min   float64
+	Max   float64
+}
+
+func (b *boundedInt) String() string {
+	return strconv.FormatFloat(b.Value, 'f', -1, 64)
+}
+
+func (b *boundedInt) Set(s string) error {
+	val, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return fmt.Errorf("value %s is not a number (must be between %g and %g)", s, b.Min, b.Max)
+	}
+	if math.IsNaN(val) || val < b.Min || val > b.Max {
+		return fmt.Errorf("value %g is out of range (must be between %g and %g)", val, b.Min, b.Max)
+	}
+
+	b.Value = val
+	return nil
 }
