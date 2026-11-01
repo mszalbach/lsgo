@@ -2,3 +2,4 @@
 # local test folder to serve files
 /public
 TODO.md
+/node_modules
