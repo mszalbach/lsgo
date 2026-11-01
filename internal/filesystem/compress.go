@@ -2,6 +2,7 @@ package filesystem
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -10,9 +11,15 @@ import (
 )
 
 // WriteZipArchive creates a zip from the given files and writes it to the io.Writer.
-func WriteZipArchive(w io.Writer, files ...*File) error {
+func WriteZipArchive(w io.Writer, files ...*File) (err error) {
 	files = omitRedundantSelections(files)
 	zipWriter := zip.NewWriter(w)
+	defer func() {
+		closeErr := zipWriter.Close()
+		if closeErr != nil {
+			err = errors.Join(err, fmt.Errorf("failed to finalize zip archive: %w", closeErr))
+		}
+	}()
 
 	for _, file := range files {
 		if file.IsDir {
@@ -26,11 +33,6 @@ func WriteZipArchive(w io.Writer, files ...*File) error {
 				return err
 			}
 		}
-	}
-
-	err := zipWriter.Close()
-	if err != nil {
-		return fmt.Errorf("failed to finalize zip archive: %w", err)
 	}
 
 	return nil
