@@ -104,9 +104,7 @@ func Test_browser_usage(t *testing.T) {
 
 	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port() + "/files/team")
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port()+"/files/team")
 
 		breadcrumbs := page.MustElements("nav[aria-label='Breadcrumb'] a")
 		require.Len(t, breadcrumbs, 2)
@@ -121,9 +119,7 @@ func Test_browser_usage(t *testing.T) {
 	})
 
 	t.Run("Folder Content", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port())
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port())
 
 		readme := page.MustElement("a[href='/files/README.md']")
 		assert.Equal(t, "README.md", readme.MustText())
@@ -133,9 +129,7 @@ func Test_browser_usage(t *testing.T) {
 	})
 
 	t.Run("Files can be sorted by name", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port())
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port())
 
 		nameSort := page.MustElement(".sort-controls button[data-sort-key='name']")
 		fileNames := func() []string {
@@ -175,17 +169,13 @@ func Test_browser_usage(t *testing.T) {
 	})
 
 	t.Run("Normal file is shown in browser", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port() + "/files/README.md")
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port()+"/files/README.md")
 
 		assert.Contains(t, page.MustElement("body").MustText(), "Shared project workspace")
 	})
 
 	t.Run("Unsafe file shows a warning page with a download link", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port() + "/files/budget.csv")
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port()+"/files/budget.csv")
 
 		assert.Contains(t, page.MustElement("h1").MustText(), "Preview unavailable")
 
@@ -213,9 +203,7 @@ func Test_browser_usage(t *testing.T) {
 	})
 
 	t.Run("Selected files and folders can be downloaded", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port())
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port())
 
 		downloadDir := t.TempDir()
 		waitForDownload := page.Browser().WaitDownload(downloadDir)
@@ -266,9 +254,7 @@ func Test_browser_behind_proxy_usage(t *testing.T) {
 
 	// Tests
 	t.Run("Breadcrumb Navigation", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port() + "/lsgo/files/team")
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port()+"/lsgo/files/team")
 
 		breadcrumbs := page.MustElements("nav[aria-label='Breadcrumb'] a")
 		require.Len(t, breadcrumbs, 2)
@@ -283,9 +269,7 @@ func Test_browser_behind_proxy_usage(t *testing.T) {
 	})
 
 	t.Run("Folder Content", func(t *testing.T) {
-		incognito := browser.MustIncognito()
-		page := incognito.MustPage("http://localhost:" + port.Port() + "/lsgo/")
-		t.Cleanup(page.MustClose)
+		page := page(t, browser, "http://localhost:"+port.Port()+"/lsgo/")
 
 		readme := page.MustElement("a[href='/lsgo/files/README.md']")
 		assert.Equal(t, "README.md", readme.MustText())
@@ -293,4 +277,13 @@ func Test_browser_behind_proxy_usage(t *testing.T) {
 		teamFolder := page.MustElement("a[href='/lsgo/files/team']")
 		assert.Equal(t, "team", teamFolder.MustText())
 	})
+}
+
+func page(t *testing.T, browser *rod.Browser, url string) *rod.Page {
+	t.Helper()
+	incognito := browser.MustIncognito()
+	t.Cleanup(incognito.MustClose)
+	page := incognito.MustPage(url)
+	t.Cleanup(page.MustClose)
+	return page
 }
