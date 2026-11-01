@@ -41,13 +41,11 @@ func NewHTMLRenderer(baseURL string, templateFS fs.FS, sharedTemplateFiles ...st
 		return nil, fmt.Errorf("failed to parse embedded templates: %w", err)
 	}
 
-	r := &HTMLRenderer{
+	return &HTMLRenderer{
 		templateFS: templateFS,
 		templates:  sharedTemplates,
 		baseURL:    baseURL,
-	}
-
-	return r, nil
+	}, nil
 }
 
 func (h *HTMLRenderer) render(
