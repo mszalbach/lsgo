@@ -70,7 +70,7 @@ func (f *File) Children() ([]*File, error) {
 	var readErrors []error
 	children := make([]*File, 0, len(dirEntries))
 	for _, entry := range dirEntries {
-		// Entries stats would not follow symlinks and the isDir property would be wrong so correctly open the child
+		// Entries info would not follow symlinks and the isDir property would be wrong so correctly open the child
 		file, err := f.root.File(path.Join(f.RelPath, entry.Name()))
 		if err != nil {
 			readErrors = append(

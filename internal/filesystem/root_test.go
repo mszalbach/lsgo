@@ -3,6 +3,7 @@ package filesystem_test
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/mszalbach/lsgo/internal/filesystem"
@@ -72,11 +73,20 @@ func Test_file_returns_its_children(t *testing.T) {
 	type child struct {
 		name    string //nolint:unused // checked by the ElementsMatch assert
 		relPath string //nolint:unused // checked by the ElementsMatch assert
+		isDir   bool   //nolint:unused // checked by the ElementsMatch assert
 	}
 	testCases := map[string]struct {
 		name             string
 		expectedChildren []child
 	}{
+		"root": {
+			name: ".",
+			expectedChildren: []child{
+				{name: "folder", relPath: "folder", isDir: true},
+				{name: "hello.md", relPath: "hello.md", isDir: false},
+				{name: "symlinkFolder", relPath: "symlinkFolder", isDir: true},
+			},
+		},
 		"hello.md": {
 			name:             "hello.md",
 			expectedChildren: []child{},
@@ -84,15 +94,15 @@ func Test_file_returns_its_children(t *testing.T) {
 		"folderInFolder": {
 			name: "folder/folderInFolder",
 			expectedChildren: []child{
-				{name: "a.yaml", relPath: "folder/folderInFolder/a.yaml"},
-				{name: "b.yaml", relPath: "folder/folderInFolder/b.yaml"},
+				{name: "a.yaml", relPath: "folder/folderInFolder/a.yaml", isDir: false},
+				{name: "b.yaml", relPath: "folder/folderInFolder/b.yaml", isDir: false},
 			},
 		},
 		"symlink folder": {
 			name: "symlinkFolder",
 			expectedChildren: []child{
-				{name: "a.yaml", relPath: "symlinkFolder/a.yaml"},
-				{name: "b.yaml", relPath: "symlinkFolder/b.yaml"},
+				{name: "a.yaml", relPath: "symlinkFolder/a.yaml", isDir: false},
+				{name: "b.yaml", relPath: "symlinkFolder/b.yaml", isDir: false},
 			},
 		},
 	}
@@ -112,7 +122,10 @@ func Test_file_returns_its_children(t *testing.T) {
 			var actualChildren []child
 
 			for _, file := range children {
-				actualChildren = append(actualChildren, child{name: file.Name, relPath: file.RelPath})
+				actualChildren = append(
+					actualChildren,
+					child{name: file.Name, relPath: file.RelPath, isDir: file.IsDir},
+				)
 			}
 
 			// Then
@@ -212,6 +225,31 @@ func Test_root_cannot_access_files_outside_its_folder(t *testing.T) {
 			// Then
 			assert.Empty(t, root)
 			assert.Error(t, err)
+		})
+	}
+}
+
+func Benchmark_children(b *testing.B) {
+	for _, entryCount := range []int{100, 1_000, 10_000, 100_000} {
+		b.Run(strconv.Itoa(entryCount), func(b *testing.B) {
+			dir := b.TempDir()
+			for i := range entryCount {
+				err := os.WriteFile(filepath.Join(dir, "file-"+strconv.Itoa(i)), nil, 0o600)
+				require.NoError(b, err)
+			}
+
+			root, err := filesystem.NewRoot(dir)
+			require.NoError(b, err)
+			b.Cleanup(func() { require.NoError(b, root.Close()) })
+
+			folder, err := root.File(".")
+			require.NoError(b, err)
+
+			for range b.N {
+				children, err := folder.Children()
+				require.NoError(b, err)
+				require.Len(b, children, entryCount)
+			}
 		})
 	}
 }
