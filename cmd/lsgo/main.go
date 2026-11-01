@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
 	// needed for scratch images to have timezone information
 	_ "time/tzdata"
 
@@ -38,6 +39,7 @@ func main() {
 	slog.SetDefault(logger)
 	err = run(config)
 	if err != nil {
+		slog.Error("Failed to run server", slog.Any("error", err))
 		os.Exit(1)
 	}
 }
