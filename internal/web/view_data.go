@@ -74,7 +74,7 @@ func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
 	}
 
 	if err != nil {
-		return data, fmt.Errorf("failed to convert %s to template data: %w", dir.RelPath, err)
+		return data, fmt.Errorf("failed to load content of folder %q: %w", dir.RelPath, err)
 	}
 	return data, nil
 }

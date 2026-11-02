@@ -125,7 +125,7 @@ func addFS(w *zip.Writer, basePath string, fsys fs.FS) error {
 		return addFSEntry(w, basePath, fsys, name, d)
 	})
 	if err != nil {
-		return fmt.Errorf("failed to add fs %s to zip: %w", basePath, err)
+		return fmt.Errorf("failed to add content of %q to ZIP archive: %w", basePath, err)
 	}
 	return nil
 }
@@ -184,7 +184,7 @@ func copyFSFile(fsys fs.FS, name string, dst io.Writer) error {
 
 	_, err = io.Copy(dst, f)
 	if err != nil {
-		return fmt.Errorf("failed to write file %s to zip: %w", name, err)
+		return fmt.Errorf("failed to copy file %q into ZIP archive: %w", name, err)
 	}
 	return nil
 }
