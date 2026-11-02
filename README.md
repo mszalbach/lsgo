@@ -142,20 +142,13 @@ The linter requires `golangci-lint`.
 You can start the server using the standard Go command:
 
 ```bash
-go run ./...
-```
-
-or you can use [air](https://github.com/air-verse/air) to automatically reload on changes:
-
-```bash
-air
+go run ./... --folder=e2e/testdata
 ```
 
 TL;DR:
 
 ```bash
 make check # fmt, lint, test
-air
 make e2e
 ```
 
