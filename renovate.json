@@ -10,7 +10,7 @@
   },
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "postUpdateOptions": [
-    "gomodTidy"
+    "gomodUpdateImportPaths"
   ],
   "customManagers": [
     {
