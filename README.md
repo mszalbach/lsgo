@@ -100,6 +100,8 @@ The following command serves the host's `/tmp` directory at `http://localhost:80
 
 ```bash
 docker run --rm \
+  --read-only \
+  --cap-drop=ALL \
   --publish 8080:8080 \
   --volume /tmp:/app/public:ro \
   ghcr.io/mszalbach/lsgo:VERSION \
