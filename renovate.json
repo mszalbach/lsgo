@@ -8,7 +8,9 @@
   "vulnerabilityAlerts": {
     "enabled": true
   },
-  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "dependencyDashboard": {
+    "osvVulnerabilitySummary": "all"
+  },
   "postUpdateOptions": [
     "gomodUpdateImportPaths"
   ],
