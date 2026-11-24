@@ -32,6 +32,42 @@ type breadcrumb struct {
 	RelPath relPath
 }
 
+// parentBreadcrumb returns the parent folder of the current file/folder. Helper to be used in templates.
+func parentBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
+	if len(breadcrumbs) > 1 {
+		return breadcrumbs[len(breadcrumbs)-2]
+	}
+	// Fallback to Home
+	return breadcrumbs[0]
+}
+
+// currentBreadcrumb returns the current file/folder. Helper to be used in templates.
+func currentBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
+	return breadcrumbs[len(breadcrumbs)-1]
+}
+
+var sizesSI = []string{"B", "kB", "MB", "GB", "TB", "PB", "EB"}
+
+const baseSI int64 = 1000
+
+// humanReadableBytes converts a size in bytes to a human-readable string with SI units. Helper to be used in templates.
+func humanReadableBytes(size int64) string {
+	if size < 0 {
+		return "0 B"
+	}
+
+	unitsLimit := len(sizesSI) - 1
+	i := 0
+
+	// Keep dividing until size is under 1000 or we hit the maximum unit (EB)
+	for size >= baseSI && i < unitsLimit {
+		size /= baseSI
+		i++
+	}
+
+	return fmt.Sprintf("%d %s", size, sizesSI[i])
+}
+
 // relPath wraps a relative path string and provides methods for using it in URLs.
 type relPath struct {
 	path string

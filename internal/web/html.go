@@ -21,18 +21,6 @@ var funcs = template.FuncMap{
 	"currentBreadcrumb": currentBreadcrumb,
 }
 
-func parentBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
-	if len(breadcrumbs) > 1 {
-		return breadcrumbs[len(breadcrumbs)-2]
-	}
-	// Fallback to most of the time Home
-	return breadcrumbs[len(breadcrumbs)-1]
-}
-
-func currentBreadcrumb(breadcrumbs []breadcrumb) breadcrumb {
-	return breadcrumbs[len(breadcrumbs)-1]
-}
-
 // NewHTMLRenderer creates a HTMLRenderer.
 // Copied from https://www.alexedwards.net/blog/how-i-use-htmx-with-go
 func NewHTMLRenderer(baseURL string, templateFS fs.FS, sharedTemplateFiles ...string) (*HTMLRenderer, error) {
@@ -81,25 +69,4 @@ func (h *HTMLRenderer) render(
 	}
 
 	return nil
-}
-
-var sizesSI = []string{"B", "kB", "MB", "GB", "TB", "PB", "EB"}
-
-const baseSI int64 = 1000
-
-func humanReadableBytes(size int64) string {
-	if size < 0 {
-		return "0 B"
-	}
-
-	unitsLimit := len(sizesSI) - 1
-	i := 0
-
-	// Keep dividing until size is under 1000 or we hit the maximum unit (EB)
-	for size >= baseSI && i < unitsLimit {
-		size /= baseSI
-		i++
-	}
-
-	return fmt.Sprintf("%d %s", size, sizesSI[i])
 }
