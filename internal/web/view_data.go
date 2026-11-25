@@ -102,7 +102,9 @@ func fileDataFrom(file *filesystem.File) fileData {
 	}
 }
 
-func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
+// loadFolderData returns every child that could be read together with any read error.
+// Callers may use the returned data even when an error is present.
+func loadFolderData(dir *filesystem.File) ([]fileData, error) {
 	children, err := dir.Children()
 	data := make([]fileData, len(children))
 	for i, child := range children {
@@ -110,7 +112,7 @@ func folderDataFrom(dir *filesystem.File) ([]fileData, error) {
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("load content of folder %q: %w", dir.RelPath, err)
+		return data, fmt.Errorf("load content of folder %q: %w", dir.RelPath, err)
 	}
 	return data, nil
 }

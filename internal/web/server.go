@@ -154,7 +154,7 @@ func (s Router) handleOpenFileError(w http.ResponseWriter, r *http.Request, file
 
 func (s Router) serveFolder(w http.ResponseWriter, r *http.Request, dir *filesystem.File) {
 	breadcrumb := createBreadcrumb(dir.RelPath)
-	folderData, err := folderDataFrom(dir)
+	folderData, err := loadFolderData(dir)
 	if err != nil && !errors.Is(err, filesystem.ErrPartialChildren) {
 		s.httpError(w, r, dir, err, "An unexpected error occurred while trying to read the folder.")
 		return

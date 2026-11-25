@@ -27,6 +27,7 @@ func TestMain(m *testing.M) {
 		fmt.Println("Failed to create required empty folder")
 		os.Exit(1)
 	}
+	// there is a broken symlink in the testdata folder to show this does not break the server
 	m.Run()
 }
 
