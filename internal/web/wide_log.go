@@ -58,7 +58,7 @@ func (rw *responseWriterWrapper) Write(b []byte) (int, error) {
 
 	n, err := rw.ResponseWriter.Write(b)
 	if err != nil {
-		return n, fmt.Errorf("failed to write response writer for wide log: %w", err)
+		return n, fmt.Errorf("write wide log response: %w", err)
 	}
 	rw.bytesWritten += int64(n)
 	return n, nil
@@ -82,7 +82,7 @@ func (rw *responseWriterWrapper) ReadFrom(r io.Reader) (int64, error) {
 		n, err := rf.ReadFrom(r)
 		rw.bytesWritten += n
 		if err != nil {
-			return n, fmt.Errorf("failed to read from response writer for wide log: %w", err)
+			return n, fmt.Errorf("read wide log response: %w", err)
 		}
 		return n, nil
 	}
@@ -91,7 +91,7 @@ func (rw *responseWriterWrapper) ReadFrom(r io.Reader) (int64, error) {
 	n, err := io.Copy(rw.ResponseWriter, r)
 	rw.bytesWritten += n
 	if err != nil {
-		return n, fmt.Errorf("failed to io copy for wide log: %w", err)
+		return n, fmt.Errorf("copy wide log response: %w", err)
 	}
 	return n, nil
 }

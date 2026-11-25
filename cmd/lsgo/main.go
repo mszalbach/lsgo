@@ -38,7 +38,7 @@ func main() {
 	slog.SetDefault(logger)
 	err = run(config)
 	if err != nil {
-		slog.Error("Failed to run server", slog.Any("error", err))
+		slog.Error("Run server", slog.Any("error", err))
 		os.Exit(1)
 	}
 }
@@ -46,13 +46,13 @@ func main() {
 func run(config *config) error {
 	root, err := filesystem.NewRoot(config.folder)
 	if err != nil {
-		return fmt.Errorf("failed to open root folder: %w", err)
+		return fmt.Errorf("open root folder: %w", err)
 	}
 	defer root.Close()
 
 	renderer, err := web.NewHTMLRenderer(config.baseURL, assets.Templates, "html/base.tmpl")
 	if err != nil {
-		return fmt.Errorf("failed to create HTML renderer: %w", err)
+		return fmt.Errorf("create HTML renderer: %w", err)
 	}
 
 	webServer := web.NewRouter(config.baseURL, renderer, root, config.maxInlineFileSize, config.logSampleRate)
@@ -84,7 +84,7 @@ func run(config *config) error {
 
 	stopErr := server.Shutdown(timeoutCtx)
 	if stopErr != nil {
-		return fmt.Errorf("failed to shutdown server: %w", stopErr)
+		return fmt.Errorf("shutdown server: %w", stopErr)
 	}
 
 	err = context.Cause(stopContext)

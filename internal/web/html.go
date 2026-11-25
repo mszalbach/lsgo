@@ -26,7 +26,7 @@ var funcs = template.FuncMap{
 func NewHTMLRenderer(baseURL string, templateFS fs.FS, sharedTemplateFiles ...string) (*HTMLRenderer, error) {
 	sharedTemplates, err := template.New("").Funcs(funcs).ParseFS(templateFS, sharedTemplateFiles...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse embedded templates: %w", err)
+		return nil, fmt.Errorf("parse embedded templates: %w", err)
 	}
 
 	return &HTMLRenderer{
@@ -45,13 +45,13 @@ func (h *HTMLRenderer) render(
 ) error {
 	ts, err := h.templates.Clone()
 	if err != nil {
-		return fmt.Errorf("failed to clone templates %s: %w", templateName, err)
+		return fmt.Errorf("clone template %s: %w", templateName, err)
 	}
 
 	if len(additionalTemplateFiles) > 0 {
 		ts, err = ts.ParseFS(h.templateFS, additionalTemplateFiles...)
 		if err != nil {
-			return fmt.Errorf("failed to parse additional templates %v: %w", additionalTemplateFiles, err)
+			return fmt.Errorf("parse additional templates %v: %w", additionalTemplateFiles, err)
 		}
 	}
 
@@ -59,13 +59,13 @@ func (h *HTMLRenderer) render(
 	data.BaseURL = h.baseURL
 	err = ts.ExecuteTemplate(buf, templateName, data)
 	if err != nil {
-		return fmt.Errorf("failed to execute template %s: %w", templateName, err)
+		return fmt.Errorf("execute template %s: %w", templateName, err)
 	}
 
 	w.WriteHeader(status)
 	_, err = buf.WriteTo(w)
 	if err != nil {
-		return fmt.Errorf("failed to write template to http response %s: %w", templateName, err)
+		return fmt.Errorf("write template %s to HTTP response: %w", templateName, err)
 	}
 
 	return nil

@@ -37,7 +37,7 @@ func parseFlags(args []string, output io.Writer) (*config, error) {
 		"Maximum file size to display inline in bytes; larger files are download-only.",
 	)
 
-	sampleRate := &boundedInt{
+	sampleRate := &boundedFloat{
 		Value: 0.05,
 		Min:   0,
 		Max:   1,
@@ -46,7 +46,7 @@ func parseFlags(args []string, output io.Writer) (*config, error) {
 
 	err := fs.Parse(args)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse config: %w", err)
+		return nil, fmt.Errorf("parse config: %w", err)
 	}
 	config.logSampleRate = sampleRate.Value
 	config.normalizeBaseURL()
@@ -63,17 +63,17 @@ func (c *config) normalizeBaseURL() {
 	c.baseURL = "/" + strings.Trim(cleaned, "/")
 }
 
-type boundedInt struct {
+type boundedFloat struct {
 	Value float64
 	Min   float64
 	Max   float64
 }
 
-func (b *boundedInt) String() string {
+func (b *boundedFloat) String() string {
 	return strconv.FormatFloat(b.Value, 'f', -1, 64)
 }
 
-func (b *boundedInt) Set(s string) error {
+func (b *boundedFloat) Set(s string) error {
 	val, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return fmt.Errorf("value %s is not a number (must be between %g and %g)", s, b.Min, b.Max)

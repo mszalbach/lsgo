@@ -184,18 +184,8 @@ func (s Router) serveFile(w http.ResponseWriter, r *http.Request, file *filesyst
 	}
 	defer osFile.Close()
 
-	mediaType, err := detectMediaType(osFile)
-	if err != nil {
-		s.httpError(w, r, file, err, "An unexpected error occurred while trying to detect the media type.")
-		return
-	}
-
-	isSafeMediaType, err := isSafeInlineMediaType(mediaType)
-	if err != nil {
-		s.httpError(w, r, file, err, "An unexpected error occurred while trying to check the media type.")
-		return
-	}
-
+	mediaType := detectMediaType(osFile)
+	isSafeMediaType := isSafeInlineMediaType(mediaType)
 	isFileTooLarge := file.Size > s.maxInlineFileSize
 	isUnsafeMediaType := !isSafeMediaType
 
@@ -230,7 +220,7 @@ func (s Router) httpError(
 	renderError := s.htmlRenderer.render(
 		w,
 		http.StatusInternalServerError,
-		data{Breadcrumb: breadcrumb, Content: fmt.Sprintf("Failed to serve %s: %s", file.RelPath, userErrorMsg)},
+		data{Breadcrumb: breadcrumb, Content: fmt.Sprintf("Serve %s: %s", file.RelPath, userErrorMsg)},
 		"base",
 		"html/pages/error.tmpl",
 	)

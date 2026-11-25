@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -27,31 +26,35 @@ var safeInlineMediaTypes = map[string]bool{
 	"application/yaml": true,
 }
 
-func isSafeInlineMediaType(rawMediaType string) (bool, error) {
+func isSafeInlineMediaType(rawMediaType string) bool {
 	parsedMediaType, _, err := mime.ParseMediaType(rawMediaType)
 	if err != nil {
-		return false, fmt.Errorf("failed to parse media type %s: %w", parsedMediaType, err)
+		return false
 	}
-	return safeInlineMediaTypes[parsedMediaType], nil
+	return safeInlineMediaTypes[parsedMediaType]
 }
 
 // detectMediaType finds out which mime type a file is.
 // Will always return a mime type.
-func detectMediaType(file *os.File) (string, error) {
+func detectMediaType(file *os.File) string {
 	ext := filepath.Ext(file.Name())
 	rawMediaType := mime.TypeByExtension(ext)
 
 	if rawMediaType != "" {
-		return rawMediaType, nil
+		return rawMediaType
 	}
 
 	buffer := make([]byte, 512)
 	n, _ := io.ReadFull(file, buffer)
 
-	_, err := file.Seek(0, io.SeekStart)
-	if err != nil {
-		return "application/octet-stream", fmt.Errorf("failed to reset file reader for %s: %w", file.Name(), err)
+	if n == 0 {
+		return "application/octet-stream"
 	}
 
-	return http.DetectContentType(buffer[:n]), nil
+	_, err := file.Seek(0, io.SeekStart)
+	if err != nil {
+		return "application/octet-stream"
+	}
+
+	return http.DetectContentType(buffer[:n])
 }
